@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import requests
 
-st.set_page_config(page_title="My Resell WMS", page_icon="📦", layout="centered")
-st.title("📦 My Resell WMS (Αυτόματο)")
+st.set_page_config(page_title="AuraNovaTD WMS", page_icon="📦", layout="centered")
+st.title("📦 AuraNovaTD WMS (Αυτόματο)")
 
 # 1. Το Link από το Google Sheet σου για διάβασμα
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1sHsvJ4Lac5MuKV221QDpbJ-GfjRBNVh85C6jnCQtQbE/edit?usp=drivesdk"
