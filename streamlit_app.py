@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Ρύθμιση σελίδας
-st.set_page_config(page_title="My Resell WMS", page_icon="📦", layout="centered")
+st.set_page_config(page_title="AuraNovaTD WMS", page_icon="📦", layout="centered")
 st.title("📦 My Resell WMS")
 
 # Το δικό σου Google Sheet Link
