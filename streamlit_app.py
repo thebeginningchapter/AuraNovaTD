@@ -3,7 +3,7 @@ import pandas as pd
 
 # Ρύθμιση σελίδας
 st.set_page_config(page_title="AuraNovaTD WMS", page_icon="📦", layout="centered")
-st.title("📦 My Resell WMS")
+st.title("📦 AuraNovaTD WMS")
 
 # Το δικό σου Google Sheet Link
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1sHsvJ4Lac5MuKV221QDpbJ-GfjRBNVh85C6jnCQtQbE/edit?usp=drivesdk"
