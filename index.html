@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Pro</title>
+    <title>AuraNovaTD WMS Pro v2</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
@@ -63,7 +63,7 @@
             "iPhone 17 Pro Max"
         ];
 
-        // Σταθερό Όριο Ασφαλείας για όλα τα μοντέλα (αν πέσει κάτω από 3, χτυπάει ειδοποίηση)
+        // Σταθερό Όριο Ασφαλείας για ειδοποίηση χαμηλού στοκ
         const MIN_SAFETY_STOCK = 3;
 
         const docRef = doc(db, "wms", "inventory");
@@ -102,19 +102,28 @@
 
             models.forEach(model => {
                 const stats = data[model];
-                const calculatedTotalStock = (parseInt(stats.stock) || 0) + (parseInt(stats.sold) || 0);
-                const netProfit = ((parseFloat(stats.sold_profit) || 0) - (parseFloat(stats.total_cost) || 0)).toFixed(2);
                 
+                // Ασφαλές διάβασμα τιμών για προστασία από παλιά δεδομένα
+                const currentStock = stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
+                const soldCount = stats.hasOwnProperty('sold') ? parseInt(stats.sold) : 0;
+                
+                // Αν υπήρχε παλιό total_stock χρησιμοποιείται, αλλιώς υπολογίζεται αυτόματα
+                const calculatedTotalStock = stats.hasOwnProperty('total_stock') && !stats.hasOwnProperty('sold') 
+                    ? parseInt(stats.total_stock) 
+                    : (currentStock + soldCount);
+                
+                const netProfit = ((parseFloat(stats.sold_profit) || 0) - (parseFloat(stats.total_cost) || 0)).toFixed(2);
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 
-                // Συστημικός Έλεγχος: Αν το στοκ είναι χαμηλό, κοκκινίζει η κάρτα και μπαίνει alert
-                const isLowStock = stats.stock < MIN_SAFETY_STOCK;
+                // Έξυπνος έλεγχος Alert: Χτυπάει ΜΟΝΟ αν το προϊόν έχει αρχίσει να χρησιμοποιεί τη νέα λογική 
+                // ή αν το πραγματικό του τρέχον στοκ είναι χαμηλό (αλλά όχι αν είναι απλώς μηδενικό επειδή είναι παλιό/ασυγχρόνιστο)
+                const isLowStock = currentStock > 0 && currentStock < MIN_SAFETY_STOCK;
                 const cardBg = isLowStock ? "bg-red-50/60 border-red-200" : "bg-white";
 
                 if (isLowStock) {
                     hasAlerts = true;
                     const li = document.createElement("li");
-                    li.innerHTML = `Ξεμένεις από <b>${model}</b> (Στοκ: ${stats.stock})`;
+                    li.innerHTML = `Ξεμένεις από <b>${model}</b> (Στοκ: ${currentStock})`;
                     alertsList.appendChild(li);
                 }
 
@@ -126,8 +135,8 @@
                         ${isLowStock ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">REORDER</span>' : ''}
                     </div>
                     <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-3">
-                        <div class="bg-gray-100/80 p-2 rounded"><b>Στοκ:</b> <span class="${isLowStock ? 'text-red-600 font-bold' : ''}">${stats.stock}</span></div>
-                        <div class="bg-gray-100/80 p-2 rounded"><b>Πουλήθηκαν:</b> ${stats.sold}</div>
+                        <div class="bg-gray-100/80 p-2 rounded"><b>Στοκ:</b> <span class="${isLowStock ? 'text-red-600 font-bold' : ''}">${currentStock}</span></div>
+                        <div class="bg-gray-100/80 p-2 rounded"><b>Πουλήθηκαν:</b> ${soldCount}</div>
                         <div class="bg-blue-50 p-2 rounded text-blue-700 font-medium"><b>Συνολικά:</b> ${calculatedTotalStock}</div>
                         <div class="bg-gray-100/80 p-2 rounded"><b>Κέρδος:</b> <span class="${netProfit >= 0 ? 'text-green-600' : 'text-red-600'} font-medium">${netProfit}€</span></div>
                     </div>
@@ -146,7 +155,6 @@
                 container.appendChild(card);
             });
 
-            // Εμφάνιση ή απόκρυψη του κόκκινου banner ειδοποιήσεων
             if (hasAlerts) alertsContainer.classList.remove("hidden");
             else alertsContainer.classList.add("hidden");
 
@@ -164,26 +172,37 @@
                     return;
                 }
 
+                // Εξασφάλιση ότι υπάρχουν όλα τα πεδία κατά την εγγραφή
+                if (!data[model].hasOwnProperty('stock')) data[model].stock = 0;
+                if (!data[model].hasOwnProperty('sold')) data[model].sold = 0;
+                if (!data[model].hasOwnProperty('total_cost')) data[model].total_cost = 0;
+                if (!data[model].hasOwnProperty('sold_profit')) data[model].sold_profit = 0;
+
                 let logType = "";
                 if (type === 'restock') {
-                    data[model].stock = (parseInt(data[model].stock) || 0) + qty;
-                    data[model].total_cost = (parseFloat(data[model].total_cost) || 0) + price;
+                    data[model].stock = parseInt(data[model].stock) + qty;
+                    data[model].total_cost = parseFloat(data[model].total_cost) + price;
                     logType = "🔄 Restock";
                 } else if (type === 'sale') {
-                    if (data[model].stock < qty) {
+                    if (parseInt(data[model].stock) < qty) {
                         alert("❌ Δεν υπάρχει αρκετό στοκ στην αποθήκη!");
                         return;
                     }
-                    data[model].stock = (parseInt(data[model].stock) || 0) - qty;
-                    data[model].sold = (parseInt(data[model].sold) || 0) + qty;
-                    data[model].sold_profit = (parseFloat(data[model].sold_profit) || 0) + price;
+                    data[model].stock = parseInt(data[model].stock) - qty;
+                    data[model].sold = parseInt(data[model].sold) + qty;
+                    data[model].sold_profit = parseFloat(data[model].sold_profit) + price;
                     logType = "💰 Πώληση";
+                }
+
+                // Αφαίρεση του παλιού άχρηστου πεδίου αν υπάρχει για να καθαρίσει η βάση
+                if (data[model].hasOwnProperty('total_stock')) {
+                    delete data[model].total_stock;
                 }
 
                 // 1. Ενημέρωση Αποθήκης
                 await setDoc(docRef, data);
 
-                // 2. Αυτόματη Καταγραφή στο Ιστορικό Κινήσεων (Audit Trail)
+                // 2. Αυτόματη Καταγραφή στο Ιστορικό
                 const now = new Date();
                 const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
                 
@@ -202,7 +221,7 @@
             };
         }
 
-        // Live Παρακολούθηση του Ιστορικού (Real-time updates)
+        // Live Παρακολούθηση του Ιστορικού
         function listenToTransactions() {
             const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"), limit(5));
             onSnapshot(q, (snapshot) => {
