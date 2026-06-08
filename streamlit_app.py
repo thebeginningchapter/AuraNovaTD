@@ -1,68 +1,47 @@
 import streamlit as st
-import pandas as pd
-import requests
+import json
+import os
 
 st.set_page_config(page_title="My Resell WMS", page_icon="📦", layout="centered")
-st.title("📦 My Resell WMS")
+st.title("📦 Aura Nova WMS (Αυτόνομο)")
 
-# Το link της φόρμας σου για να στέλνουμε δεδομένα
-FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc9tUrfzkKLAlArm9RYcP2bUi8mgw1OwUg95sUJes2kv9fYdQ/formResponse"
+DATA_FILE = "wms_data.json"
 
-# Το link του Sheet - Διαβάζουμε απευθείας την καρτέλα των απαντήσεων της Φόρμας!
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1sHsvJ4Lac5MuKV221QDpbJ-GfjRBNVh85C6jnCQtQbE/edit?usp=drivesdk"
-CSV_URL = SHEET_URL.replace("/edit?usp=drivesdk", "/gviz/tq?tqx=out:csv&sheet=Απαντήσεις φόρμας 1")
+# Αρχικά δεδομένα αν το αρχείο δεν υπάρχει ακόμα
+DEFAULT_DATA = {
+    "iPhone 11": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 12": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 13": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 14": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0}
+}
 
-@st.cache_data(ttl=2)
-def load_data():
-    try:
-        # Διαβάζουμε το ιστορικό των κινήσεων
-        df_entries = pd.read_csv(CSV_URL)
-        df_entries.columns = df_entries.columns.str.strip()
-        return df_entries
-    except:
-        return pd.DataFrame()
+# Συναρτήσεις για διάβασμα και γράψιμο στο τοπικό αρχείο
+def load_inventory():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return DEFAULT_DATA
 
-df_raw = load_data()
+def save_inventory(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
-# Λίστα με τα μοντέλα σου (μπορείς να προσθέσεις όποιο θέλεις εδώ)
-MODELS = ["iPhone 11", "iPhone 12", "iPhone 13", "iPhone 14"]
+# Φόρτωση δεδομένων στη μνήμη
+inventory = load_inventory()
 
-for model in MODELS:
-    # Υπολογισμός στατιστικών live μέσα από τον κώδικα για να μην κολλάει το Excel
-    total_stock = 0
-    sold = 0
-    total_cost = 0.0
-    sold_profit = 0.0
-    
-    if not df_raw.empty and 'Model' in df_raw.columns:
-        # Φιλτράρουμε τις κινήσεις για το συγκεκριμένο μοντέλο
-        df_model = df_raw[df_raw['Model'] == model]
-        
-        for _, row in df_model.iterrows():
-            # Έλεγχος αν οι στήλες έχουν δεδομένα
-            qty = int(row['Qty']) if not pd.isna(row['Qty']) else 0
-            amount = float(row['Amount']) if not pd.isna(row['Amount']) else 0.0
-            type_move = str(row['Type']).strip()
-            
-            if type_move == 'Restock':
-                total_stock += qty
-                total_cost += amount
-            elif type_move == 'Πώληση':
-                sold += qty
-                sold_profit += amount
-
-    stock = total_stock - sold
-    net_profit = sold_profit - total_cost
+# Εμφάνιση των προϊόντων
+for model, stats in inventory.items():
+    net_profit = stats["sold_profit"] - stats["total_cost"]
     
     with st.container():
         st.markdown(f"### 📱 {model}")
         
         col1, col2 = st.columns(2)
-        col1.metric("Στοκ Αποθήκης", stock)
-        col2.metric("Πουλήθηκαν (Sold)", sold)
+        col1.metric("Στοκ Αποθήκης", stats["stock"])
+        col2.metric("Πουλήθηκαν (Sold)", stats["sold"])
         
         col3, col4 = st.columns(2)
-        col3.metric("Συνολικά Αγορασμένα", total_stock)
+        col3.metric("Συνολικά Αγορασμένα", stats["total_stock"])
         col4.metric("Καθαρό Κέρδος", f"{net_profit:.2f}€")
         
         action = st.radio(f"Ενέργεια για {model}", ["Αναμονή", "🔄 Restock (Αγορά)", "💰 Καταγραφή Πώλησης"], key=f"act_{model}")
@@ -72,14 +51,12 @@ for model in MODELS:
             cost_in = st.number_input("Συνολικό Κόστος Νέας Αγοράς (€)", min_value=0.0, step=0.5, key=f"c_{model}")
             
             if st.button("🚀 Επιβεβαίωση Restock", key=f"b_r_{model}"):
-                form_data = {
-                    'entry.1147572793': model,
-                    'entry.2127271810': 'Restock',
-                    'entry.2064099496': qty_in,
-                    'entry.174246835': cost_in
-                }
-                requests.post(FORM_URL, data=form_data)
-                st.success("Καταγράφηκε!")
+                inventory[model]["total_stock"] += qty_in
+                inventory[model]["stock"] += qty_in
+                inventory[model]["total_cost"] += cost_in
+                
+                save_inventory(inventory)
+                st.success("Το Restock καταγράφηκε επιτυχώς!")
                 st.rerun()
                 
         elif action == "💰 Καταγραφή Πώλησης":
@@ -87,15 +64,13 @@ for model in MODELS:
             price_out = st.number_input("Συνολική Τιμή Πώλησης (€)", min_value=0.0, step=0.5, key=f"p_{model}")
             
             if st.button("🚀 Επιβεβαίωση Πώλησης", key=f"b_s_{model}"):
-                if stock >= qty_out:
-                    form_data = {
-                        'entry.1147572793': model,
-                        'entry.2127271810': 'Πώληση',
-                        'entry.2064099496': qty_out,
-                        'entry.174246835': price_out
-                    }
-                    requests.post(FORM_URL, data=form_data)
-                    st.success("Καταγράφηκε!")
+                if inventory[model]["stock"] >= qty_out:
+                    inventory[model]["stock"] -= qty_out
+                    inventory[model]["sold"] += qty_out
+                    inventory[model]["sold_profit"] += price_out
+                    
+                    save_inventory(inventory)
+                    st.success("Η πώληση καταγράφηκε επιτυχώς!")
                     st.rerun()
                 else:
                     st.error("❌ Δεν έχεις τόσο στοκ στην αποθήκη!")
