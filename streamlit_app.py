@@ -69,21 +69,25 @@ for model, stats in list(inventory.items()):
             cost_in = st.number_input("Συνολικό Κόστος Νέας Αγοράς (€)", min_value=0.0, step=0.5, key=f"c_{model}")
             
             if st.button("🚀 Επιβεβαίωση Restock", key=f"b_r_{model}"):
-                inventory[model]["total_stock"] += qty_in
-                inventory[model]["stock"] += qty_in
-                inventory[model]["total_cost"] += cost_in
-                
-                st.session_state.wms_data = inventory
-                save_inventory(inventory)
-                st.success("Το Restock καταγράφηκε επιτυχώς!")
-                st.rerun()
+                # ΔΙΟΡΘΩΣΗ / ΑΣΦΑΛΕΙΑ: Πρέπει τα τεμάχια αγοράς να είναι πάνω από 0
+                if qty_in <= 0:
+                    st.error("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο για να κάνεις Restock!")
+                else:
+                    inventory[model]["total_stock"] += qty_in
+                    inventory[model]["stock"] += qty_in
+                    inventory[model]["total_cost"] += cost_in
+                    
+                    st.session_state.wms_data = inventory
+                    save_inventory(inventory)
+                    st.success("Το Restock καταγράφηκε επιτυχώς!")
+                    st.rerun()
                 
         elif action == "💰 Καταγραφή Πώλησης":
             qty_out = st.number_input("Πόσα τεμάχια πούλησες;", min_value=0, step=1, key=f"qo_{model}")
             price_out = st.number_input("Συνολική Τιμή Πώλησης (€)", min_value=0.0, step=0.5, key=f"p_{model}")
             
             if st.button("🚀 Επιβεβαίωση Πώλησης", key=f"b_s_{model}"):
-                # ΔΙΟΡΘΩΣΗ / ΑΣΦΑΛΕΙΑ: Πρέπει τα τεμάχια να είναι οπωσδήποτε πάνω από 0 για να γίνει η πώληση
+                # ΑΣΦΑΛΕΙΑ: Πρέπει τα τεμάχια πώλησης να είναι πάνω από 0
                 if qty_out <= 0:
                     st.error("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο για να καταγράψεις πώληση!")
                 elif inventory[model]["stock"] >= qty_out:
