@@ -1,10 +1,15 @@
 import streamlit as st
+import json
+import os
 
 # Ρύθμιση σελίδας για το κινητό
 st.set_page_config(page_title="AuraNovaTD WMS", page_icon="📦", layout="centered")
 st.title("📦 AuraNovaTD WMS")
 
-# Αρχικά δεδομένα (αν η βάση είναι εντελώς άδεια στην πρώτη εκκίνηση)
+# Τοπικό αρχείο αποθήκευσης στην ασφαλή διαδρομή του server
+DATA_FILE = "wms_data.json"
+
+# Αρχικά δεδομένα αν η εφαρμογή τρέχει για πρώτη φορά
 DEFAULT_DATA = {
     "iPhone 11": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 12": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
@@ -12,15 +17,23 @@ DEFAULT_DATA = {
     "iPhone 14": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0}
 }
 
-# Φόρτωση δεδομένων από την ασφαλή βάση της Streamlit
-if "inventory" not in st.experimental_user:
-    # Αν δεν υπάρχει στη βάση, φορτώνει τα μηδενικά
-    if "wms_data" not in st.session_state:
-        st.session_state.wms_data = DEFAULT_DATA
-else:
-    # Χρήση του session_state για μόνιμη αποθήκευση στον server
-    if "wms_data" not in st.session_state:
-        st.session_state.wms_data = DEFAULT_DATA
+# Συναρτήσεις για ασφαλή ανάγνωση και εγγραφή
+def load_inventory():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return DEFAULT_DATA
+    return DEFAULT_DATA
+
+def save_inventory(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+# Αρχικοποίηση της μνήμης του Streamlit (Session State)
+if "wms_data" not in st.session_state:
+    st.session_state.wms_data = load_inventory()
 
 inventory = st.session_state.wms_data
 
@@ -50,8 +63,10 @@ for model, stats in list(inventory.items()):
                 inventory[model]["stock"] += qty_in
                 inventory[model]["total_cost"] += cost_in
                 
+                # Αποθήκευση στη μνήμη και στο αρχείο
                 st.session_state.wms_data = inventory
-                st.success("Το Restock καταγράφηκε με ασφάλεια!")
+                save_inventory(inventory)
+                st.success("Το Restock καταγράφηκε επιτυχώς!")
                 st.rerun()
                 
         elif action == "💰 Καταγραφή Πώλησης":
@@ -64,8 +79,10 @@ for model, stats in list(inventory.items()):
                     inventory[model]["sold"] += qty_out
                     inventory[model]["sold_profit"] += price_out
                     
+                    # Αποθήκευση στη μνήμη και στο αρχείο
                     st.session_state.wms_data = inventory
-                    st.success("Η πώληση καταγράφηκε με ασφάλεια!")
+                    save_inventory(inventory)
+                    st.success("Η πώληση καταγράφηκε επιτυχώς!")
                     st.rerun()
                 else:
                     st.error("❌ Δεν έχεις τόσο στοκ στην αποθήκη!")
