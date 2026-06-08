@@ -9,13 +9,12 @@ st.title("📦 AuraNovaTD WMS")
 # Τοπικό αρχείο αποθήκευσης στον server
 DATA_FILE = "wms_data.json"
 
-# Η λίστα μοντέλων του AuraNovaTD
+# Η ΣΩΣΤΗ ΛΙΣΤΑ ΜΟΝΤΕΛΩΝ ΜΕ ΤΑ GROUP ΣΟΥ
 DEFAULT_DATA = {
-    "iPhone 13 / 13 Pro / 14": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
-    "iPhone 16e / 17e": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 13 / 13 Pro / 14 / 16e / 17e": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 15 Pro": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 15 Pro Max": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
-    "iPhone 16": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 15 / 16": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 16 Pro": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 16 Pro Max": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 17": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
@@ -28,6 +27,7 @@ def load_inventory():
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 current_data = json.load(f)
+                # Προσθήκη νέων μοντέλων αν λείπουν από το αρχείο, χωρίς διαγραφή των παλιών
                 for model in DEFAULT_DATA:
                     if model not in current_data:
                         current_data[model] = DEFAULT_DATA[model]
@@ -45,10 +45,12 @@ if "wms_data" not in st.session_state:
 
 inventory = st.session_state.wms_data
 
-for model, stats in list(inventory.items()):
-    if model not in DEFAULT_DATA:
-        continue
+# Εμφάνιση των προϊόντων με τη νέα σειρά
+for model in DEFAULT_DATA.keys():
+    if model not in inventory:
+        inventory[model] = DEFAULT_DATA[model]
         
+    stats = inventory[model]
     net_profit = stats["sold_profit"] - stats["total_cost"]
     
     with st.container():
@@ -69,7 +71,6 @@ for model, stats in list(inventory.items()):
             cost_in = st.number_input("Συνολικό Κόστος Νέας Αγοράς (€)", min_value=0.0, step=0.5, key=f"c_{model}")
             
             if st.button("🚀 Επιβεβαίωση Restock", key=f"b_r_{model}"):
-                # ΔΙΟΡΘΩΣΗ / ΑΣΦΑΛΕΙΑ: Πρέπει τα τεμάχια αγοράς να είναι πάνω από 0
                 if qty_in <= 0:
                     st.error("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο για να κάνεις Restock!")
                 else:
@@ -87,7 +88,6 @@ for model, stats in list(inventory.items()):
             price_out = st.number_input("Συνολική Τιμή Πώλησης (€)", min_value=0.0, step=0.5, key=f"p_{model}")
             
             if st.button("🚀 Επιβεβαίωση Πώλησης", key=f"b_s_{model}"):
-                # ΑΣΦΑΛΕΙΑ: Πρέπει τα τεμάχια πώλησης να είναι πάνω από 0
                 if qty_out <= 0:
                     st.error("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο για να καταγράψεις πώληση!")
                 elif inventory[model]["stock"] >= qty_out:
