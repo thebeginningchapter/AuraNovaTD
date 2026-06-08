@@ -6,23 +6,34 @@ import os
 st.set_page_config(page_title="AuraNovaTD WMS", page_icon="📦", layout="centered")
 st.title("📦 AuraNovaTD WMS")
 
-# Τοπικό αρχείο αποθήκευσης στην ασφαλή διαδρομή του server
+# Τοπικό αρχείο αποθήκευσης στον server
 DATA_FILE = "wms_data.json"
 
-# Αρχικά δεδομένα αν η εφαρμογή τρέχει για πρώτη φορά
+# Η ΝΕΑ ΕΝΗΜΕΡΩΜΕΝΗ ΛΙΣΤΑ ΜΟΝΤΕΛΩΝ ΤΟΥ AURANOVATD
 DEFAULT_DATA = {
-    "iPhone 11": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
-    "iPhone 12": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
-    "iPhone 13": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
-    "iPhone 14": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0}
+    "iPhone 13 / 13 Pro / 14": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 16e / 17e": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 15 Pro": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 15 Pro Max": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 16": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 16 Pro": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 16 Pro Max": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 17": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 17 Pro": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
+    "iPhone 17 Pro Max": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0}
 }
 
-# Συναρτήσεις για ασφαλή ανάγνωση και εγγραφή
 def load_inventory():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                current_data = json.load(f)
+                
+                # Συγχρονισμός: Αν προσθέσαμε νέα μοντέλα στη λίστα, τα βάζει στο αρχείο χωρίς να σβήσει τα παλιά
+                for model in DEFAULT_DATA:
+                    if model not in current_data:
+                        current_data[model] = DEFAULT_DATA[model]
+                return current_data
         except:
             return DEFAULT_DATA
     return DEFAULT_DATA
@@ -31,14 +42,18 @@ def save_inventory(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
-# Αρχικοποίηση της μνήμης του Streamlit (Session State)
+# Αρχικοποίηση μνήμης
 if "wms_data" not in st.session_state:
     st.session_state.wms_data = load_inventory()
 
 inventory = st.session_state.wms_data
 
-# Εμφάνιση των προϊόντων του AuraNovaTD
+# Εμφάνιση των προϊόντων
 for model, stats in list(inventory.items()):
+    # Εμφανίζουμε μόνο τα μοντέλα που είναι ενεργά στη λίστα μας
+    if model not in DEFAULT_DATA:
+        continue
+        
     net_profit = stats["sold_profit"] - stats["total_cost"]
     
     with st.container():
@@ -63,7 +78,6 @@ for model, stats in list(inventory.items()):
                 inventory[model]["stock"] += qty_in
                 inventory[model]["total_cost"] += cost_in
                 
-                # Αποθήκευση στη μνήμη και στο αρχείο
                 st.session_state.wms_data = inventory
                 save_inventory(inventory)
                 st.success("Το Restock καταγράφηκε επιτυχώς!")
@@ -79,7 +93,6 @@ for model, stats in list(inventory.items()):
                     inventory[model]["sold"] += qty_out
                     inventory[model]["sold_profit"] += price_out
                     
-                    # Αποθήκευση στη μνήμη και στο αρχείο
                     st.session_state.wms_data = inventory
                     save_inventory(inventory)
                     st.success("Η πώληση καταγράφηκε επιτυχώς!")
