@@ -10,7 +10,7 @@
 
     <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
         <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">📦 AuraNovaTD WMS</h1>
-        <p class="text-xs text-center text-gray-500 mb-4">HTML + Firebase Live Storage</p>
+        <p class="text-xs text-center text-gray-500 mb-4">HTML + Firebase (Smart Math Edition)</p>
         <div id="inventory-container" class="space-y-6">
             <p class="text-center text-gray-600">Φόρτωση αποθήκης...</p>
         </div>
@@ -18,25 +18,24 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ΑΝΤΙΚΑΤΑΣΤΗΣΕ ΑΥΤΑ ΤΑ ΣΤΟΙΧΕΙΑ ΜΕ ΤΑ ΔΙΚΑ ΣΟΥ ΑΠΟ ΤΟ FIREBASE
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBrfy1R9m9kRIOyN5MWjm1Dap3XHyMxThM",
-  authDomain: "auranovatd-wms.firebaseapp.com",
-  databaseURL: "https://auranovatd-wms-default-rtdb.firebaseio.com",
-  projectId: "auranovatd-wms",
-  storageBucket: "auranovatd-wms.firebasestorage.app",
-  messagingSenderId: "791367265756",
-  appId: "1:791367265756:web:e09f74d00931ee9210b319",
-  measurementId: "G-QFSG057YN9"
-};
+        // Τα δικά σου κλειδιά κλειδωμένα εδώ!
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrfy1R9m9kRIOyN5MWjm1Dap3XHyMxThM",
+            authDomain: "auranovatd-wms.firebaseapp.com",
+            databaseURL: "https://auranovatd-wms-default-rtdb.firebaseio.com",
+            projectId: "auranovatd-wms",
+            storageBucket: "auranovatd-wms.firebasestorage.app",
+            messagingSenderId: "791367265756",
+            appId: "1:791367265756:web:e09f74d00931ee9210b319",
+            measurementId: "G-QFSG057YN9"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Τα μοντέλα σου
+        // Λίστα μοντέλων AuraNovaTD
         const models = [
             "iPhone 13 / 13 Pro / 14 / 16e / 17e",
             "iPhone 15 Pro",
@@ -51,35 +50,46 @@ const firebaseConfig = {
 
         const docRef = doc(db, "wms", "inventory");
 
-        // Αρχικοποίηση ή Φόρτωση Δεδομένων
+        // Φόρτωση Δεδομένων
         async function loadInventory() {
-            const docSnap = await getDoc(docRef);
-            let data = {};
+            try {
+                const docSnap = await getDoc(docRef);
+                let data = {};
 
-            if (docSnap.exists()) {
-                data = docSnap.data();
-            }
-
-            // Συγχρονισμός αν λείπει κάποιο μοντέλο
-            models.forEach(model => {
-                if (!data[model]) {
-                    data[model] = { total_stock: 0, stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
+                if (docSnap.exists()) {
+                    data = docSnap.data();
                 }
-            });
 
-            renderInventory(data);
+                models.forEach(model => {
+                    if (!data[model]) {
+                        data[model] = { stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
+                    }
+                });
+
+                renderInventory(data);
+            } catch (error) {
+                console.error("Σφάλμα:", error);
+                document.getElementById("inventory-container").innerHTML = `
+                    <p class="text-center text-red-500 font-bold">❌ Αποτυχία σύνδεσης με τη βάση.</p>
+                    <p class="text-xs text-center text-gray-500 mt-1">Σιγουρέψου ότι οι κανόνες (Rules) στο Firestore είναι True.</p>
+                `;
+            }
         }
 
-        // Σχεδιασμός της σελίδας live
+        // Εμφάνιση στην οθόνη
         function renderInventory(data) {
             const container = document.getElementById("inventory-container");
             container.innerHTML = "";
 
-            for (const [model, stats] of Object.entries(data)) {
-                if (!models.includes(model)) continue;
-
-                const netProfit = (stats.sold_profit - stats.total_cost).toFixed(2);
+            models.forEach(model => {
+                const stats = data[model];
                 
+                // Αυτόματος υπολογισμός Total Stock και Κέρδους live στην οθόνη
+                const calculatedTotalStock = (parseInt(stats.stock) || 0) + (parseInt(stats.sold) || 0);
+                const netProfit = ((parseFloat(stats.sold_profit) || 0) - (parseFloat(stats.total_cost) || 0)).toFixed(2);
+                
+                const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
+
                 const card = document.createElement("div");
                 card.className = "border-b border-gray-200 pb-4 last:border-0";
                 card.innerHTML = `
@@ -87,7 +97,7 @@ const firebaseConfig = {
                     <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 mb-3">
                         <div class="bg-gray-50 p-2 rounded"><b>Στοκ:</b> ${stats.stock}</div>
                         <div class="bg-gray-50 p-2 rounded"><b>Πουλήθηκαν:</b> ${stats.sold}</div>
-                        <div class="bg-gray-50 p-2 rounded"><b>Αγορασμένα:</b> ${stats.total_stock}</div>
+                        <div class="bg-blue-50 p-2 rounded font-semibold text-blue-700"><b>Συνολικά (Total):</b> ${calculatedTotalStock}</div>
                         <div class="bg-gray-50 p-2 rounded"><b>Κέρδος:</b> ${netProfit}€</div>
                     </div>
                     
@@ -97,18 +107,19 @@ const firebaseConfig = {
                             <button onclick="window.submitAction('${model}', 'sale')" class="w-1/2 bg-green-500 text-white font-bold py-1 px-2 rounded text-xs active:bg-green-700">💰 Πώληση</button>
                         </div>
                         <div class="flex gap-2 text-xs">
-                            <input type="number" id="qty_${btoa(model)}" placeholder="Τεμάχια" class="w-1/2 p-1 border rounded bg-white" min="1">
-                            <input type="number" id="price_${btoa(model)}" placeholder="Ποσό (€)" class="w-1/2 p-1 border rounded bg-white" step="0.5">
+                            <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1 border rounded bg-white" min="1">
+                            <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1 border rounded bg-white" step="0.5">
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
-            }
+            });
 
-            // Δημιουργία global λειτουργίας για τα κουμπιά
+            // Ενέργειες κουμπιών
             window.submitAction = async (model, type) => {
-                const qtyInput = document.getElementById(`qty_${btoa(model)}`);
-                const priceInput = document.getElementById(`price_${btoa(model)}`);
+                const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
+                const qtyInput = document.getElementById(`qty_${safeId}`);
+                const priceInput = document.getElementById(`price_${safeId}`);
                 
                 const qty = parseInt(qtyInput.value) || 0;
                 const price = parseFloat(priceInput.value) || 0;
@@ -119,17 +130,16 @@ const firebaseConfig = {
                 }
 
                 if (type === 'restock') {
-                    data[model].total_stock += qty;
-                    data[model].stock += qty;
-                    data[model].total_cost += price;
+                    data[model].stock = (parseInt(data[model].stock) || 0) + qty;
+                    data[model].total_cost = (parseFloat(data[model].total_cost) || 0) + price;
                 } else if (type === 'sale') {
                     if (data[model].stock < qty) {
                         alert("❌ Δεν υπάρχει αρκετό στοκ στην αποθήκη!");
                         return;
                     }
-                    data[model].stock -= qty;
-                    data[model].sold += qty;
-                    data[model].sold_profit += price;
+                    data[model].stock = (parseInt(data[model].stock) || 0) - qty;
+                    data[model].sold = (parseInt(data[model].sold) || 0) + qty;
+                    data[model].sold_profit = (parseFloat(data[model].sold_profit) || 0) + price;
                 }
 
                 await setDoc(docRef, data);
