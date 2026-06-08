@@ -3,38 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Pro v2</title>
+    <title>AuraNovaTD WMS Ultra Secured</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
 
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-1">📦 AuraNovaTD WMS Pro</h1>
-        <p class="text-xs text-center text-blue-500 font-semibold mb-4">Advanced Supply Chain System</p>
-        
-        <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
-            <span class="font-bold">⚠️ ΠΡΟΣΟΧΗ - ΧΑΜΗΛΟ ΣΤΟΚ:</span>
-            <ul id="alerts-list" class="list-disc list-inside mt-1"></ul>
-        </div>
-
-        <div id="inventory-container" class="space-y-6">
-            <p class="text-center text-gray-600">Φόρτωση εξελιγμένης αποθήκης...</p>
+    <div id="login-screen" class="fixed inset-0 bg-gray-900 flex flex-col justify-center items-center z-50 px-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+            <div class="text-center mb-4">
+                <span class="text-4xl">🔐</span>
+                <h2 class="text-xl font-bold text-gray-800 mt-2 mb-1">AuraNovaTD WMS</h2>
+                <p class="text-xs text-gray-500">Σύνδεση στο κλειδωμένο σύστημα</p>
+            </div>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-gray-600">Email</label>
+                    <input type="email" id="email-input" placeholder="name@example.com" 
+                           class="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-sm mt-1">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-600">Password</label>
+                    <input type="password" id="password-input" placeholder="••••••••" 
+                           class="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-sm mt-1">
+                </div>
+            </div>
+            
+            <button onclick="window.loginWithFirebase()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors mt-6 text-sm">
+                Είσοδος στην Αποθήκη
+            </button>
+            <p id="login-error" class="text-red-500 text-xs mt-3 hidden text-center font-semibold"></p>
         </div>
     </div>
 
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-        <h2 class="text-lg font-bold text-gray-800 mb-3 flex justify-between items-center">
-            <span>📜 Ιστορικό Κινήσεων (Live Log)</span>
-            <span class="text-xs font-normal text-gray-500">Τελευταίες 5 κινήσεις</span>
-        </h2>
-        <div id="transactions-container" class="space-y-2 text-xs">
-            <p class="text-gray-500 italic">Φόρτωση ιστορικού...</p>
+    <div id="main-app" class="hidden">
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <h1 class="text-2xl font-bold text-gray-800">📦 AuraNovaTD WMS</h1>
+                <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
+            </div>
+            <p class="text-xs text-blue-500 font-semibold mb-4">Secured Supply Chain System</p>
+            
+            <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+                <span class="font-bold">⚠️ ΠΡΟΣΟΧΗ - ΧΑΜΗΛΟ ΣΤΟΚ:</span>
+                <ul id="alerts-list" class="list-disc list-inside mt-1"></ul>
+            </div>
+
+            <div id="inventory-container" class="space-y-6">
+                <p class="text-center text-gray-600">Φόρτωση εξελιγμένης αποθήκης...</p>
+            </div>
+        </div>
+
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-3 flex justify-between items-center">
+                <span>📜 Ιστορικό Κινήσεων (Live Log)</span>
+                <span class="text-xs font-normal text-gray-500">Τελευταίες 5 κινήσεις</span>
+            </h2>
+            <div id="transactions-container" class="space-y-2 text-xs">
+                <p class="text-gray-500 italic">Φόρτωση ιστορικού...</p>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // Τα κλειδιά σου
         const firebaseConfig = {
@@ -50,6 +84,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         const models = [
             "iPhone 13 / 13 Pro / 14 / 16e / 17e",
@@ -63,12 +98,45 @@
             "iPhone 17 Pro Max"
         ];
 
-        // Σταθερό Όριο Ασφαλείας για ειδοποίηση χαμηλού στοκ
         const MIN_SAFETY_STOCK = 3;
-
         const docRef = doc(db, "wms", "inventory");
+        let cachedData = null;
+        let unsubscribeTransactions = null;
 
-        // Φόρτωση Δεδομένων Αποθήκης
+        // Παρακολούθηση αν ο χρήστης είναι συνδεδεμένος
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById("login-screen").classList.add("hidden");
+                document.getElementById("main-app").classList.remove("hidden");
+                loadInventory();
+                listenToTransactions();
+            } else {
+                document.getElementById("login-screen").classList.remove("hidden");
+                document.getElementById("main-app").classList.add("hidden");
+                if (unsubscribeTransactions) unsubscribeTransactions();
+            }
+        });
+
+        // Σύνδεση
+        window.loginWithFirebase = async function() {
+            const email = document.getElementById("email-input").value;
+            const password = document.getElementById("password-input").value;
+            const errorMsg = document.getElementById("login-error");
+            
+            try {
+                errorMsg.classList.add("hidden");
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                errorMsg.classList.remove("hidden");
+                errorMsg.innerText = "❌ Λάθος στοιχεία πρόσβασης. Δοκίμασε ξανά.";
+            }
+        };
+
+        // Αποσύνδεση
+        window.logoutWithFirebase = async function() {
+            await signOut(auth);
+        };
+
         async function loadInventory() {
             try {
                 const docSnap = await getDoc(docRef);
@@ -84,13 +152,13 @@
                     }
                 });
 
+                cachedData = data;
                 renderInventory(data);
             } catch (error) {
                 console.error("Σφάλμα:", error);
             }
         }
 
-        // Εμφάνιση της Αποθήκης και Έλεγχος Ορίων
         function renderInventory(data) {
             const container = document.getElementById("inventory-container");
             const alertsList = document.getElementById("alerts-list");
@@ -103,11 +171,9 @@
             models.forEach(model => {
                 const stats = data[model];
                 
-                // Ασφαλές διάβασμα τιμών για προστασία από παλιά δεδομένα
                 const currentStock = stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
                 const soldCount = stats.hasOwnProperty('sold') ? parseInt(stats.sold) : 0;
                 
-                // Αν υπήρχε παλιό total_stock χρησιμοποιείται, αλλιώς υπολογίζεται αυτόματα
                 const calculatedTotalStock = stats.hasOwnProperty('total_stock') && !stats.hasOwnProperty('sold') 
                     ? parseInt(stats.total_stock) 
                     : (currentStock + soldCount);
@@ -115,8 +181,6 @@
                 const netProfit = ((parseFloat(stats.sold_profit) || 0) - (parseFloat(stats.total_cost) || 0)).toFixed(2);
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 
-                // Έξυπνος έλεγχος Alert: Χτυπάει ΜΟΝΟ αν το προϊόν έχει αρχίσει να χρησιμοποιεί τη νέα λογική 
-                // ή αν το πραγματικό του τρέχον στοκ είναι χαμηλό (αλλά όχι αν είναι απλώς μηδενικό επειδή είναι παλιό/ασυγχρόνιστο)
                 const isLowStock = currentStock > 0 && currentStock < MIN_SAFETY_STOCK;
                 const cardBg = isLowStock ? "bg-red-50/60 border-red-200" : "bg-white";
 
@@ -158,7 +222,6 @@
             if (hasAlerts) alertsContainer.classList.remove("hidden");
             else alertsContainer.classList.add("hidden");
 
-            // Λειτουργία κουμπιών
             window.submitAction = async (model, type) => {
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 const qtyInput = document.getElementById(`qty_${safeId}`);
@@ -172,37 +235,33 @@
                     return;
                 }
 
-                // Εξασφάλιση ότι υπάρχουν όλα τα πεδία κατά την εγγραφή
-                if (!data[model].hasOwnProperty('stock')) data[model].stock = 0;
-                if (!data[model].hasOwnProperty('sold')) data[model].sold = 0;
-                if (!data[model].hasOwnProperty('total_cost')) data[model].total_cost = 0;
-                if (!data[model].hasOwnProperty('sold_profit')) data[model].sold_profit = 0;
+                if (!cachedData[model].hasOwnProperty('stock')) cachedData[model].stock = 0;
+                if (!cachedData[model].hasOwnProperty('sold')) cachedData[model].sold = 0;
+                if (!cachedData[model].hasOwnProperty('total_cost')) cachedData[model].total_cost = 0;
+                if (!cachedData[model].hasOwnProperty('sold_profit')) cachedData[model].sold_profit = 0;
 
                 let logType = "";
                 if (type === 'restock') {
-                    data[model].stock = parseInt(data[model].stock) + qty;
-                    data[model].total_cost = parseFloat(data[model].total_cost) + price;
+                    cachedData[model].stock = parseInt(cachedData[model].stock) + qty;
+                    cachedData[model].total_cost = parseFloat(cachedData[model].total_cost) + price;
                     logType = "🔄 Restock";
                 } else if (type === 'sale') {
-                    if (parseInt(data[model].stock) < qty) {
+                    if (parseInt(cachedData[model].stock) < qty) {
                         alert("❌ Δεν υπάρχει αρκετό στοκ στην αποθήκη!");
                         return;
                     }
-                    data[model].stock = parseInt(data[model].stock) - qty;
-                    data[model].sold = parseInt(data[model].sold) + qty;
-                    data[model].sold_profit = parseFloat(data[model].sold_profit) + price;
+                    cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
+                    cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
+                    cachedData[model].sold_profit = parseFloat(cachedData[model].sold_profit) + price;
                     logType = "💰 Πώληση";
                 }
 
-                // Αφαίρεση του παλιού άχρηστου πεδίου αν υπάρχει για να καθαρίσει η βάση
-                if (data[model].hasOwnProperty('total_stock')) {
-                    delete data[model].total_stock;
+                if (cachedData[model].hasOwnProperty('total_stock')) {
+                    delete cachedData[model].total_stock;
                 }
 
-                // 1. Ενημέρωση Αποθήκης
-                await setDoc(docRef, data);
+                await setDoc(docRef, cachedData);
 
-                // 2. Αυτόματη Καταγραφή στο Ιστορικό
                 const now = new Date();
                 const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
                 
@@ -217,14 +276,13 @@
 
                 qtyInput.value = "";
                 priceInput.value = "";
-                renderInventory(data);
+                renderInventory(cachedData);
             };
         }
 
-        // Live Παρακολούθηση του Ιστορικού
         function listenToTransactions() {
             const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"), limit(5));
-            onSnapshot(q, (snapshot) => {
+            unsubscribeTransactions = onSnapshot(q, (snapshot) => {
                 const txContainer = document.getElementById("transactions-container");
                 txContainer.innerHTML = "";
                 
@@ -250,10 +308,6 @@
                 });
             });
         }
-
-        // Εκκίνηση
-        loadInventory();
-        listenToTransactions();
     </script>
 </body>
 </html>
