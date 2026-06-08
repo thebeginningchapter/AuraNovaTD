@@ -1,15 +1,11 @@
 import streamlit as st
 import json
-import os
 
 # Ρύθμιση σελίδας για το κινητό
 st.set_page_config(page_title="AuraNovaTD WMS", page_icon="📦", layout="centered")
 st.title("📦 AuraNovaTD WMS")
 
-# Τοπικό αρχείο αποθήκευσης στον server
-DATA_FILE = "wms_data.json"
-
-# Η ΣΩΣΤΗ ΛΙΣΤΑ ΜΟΝΤΕΛΩΝ ΜΕ ΤΑ GROUP ΣΟΥ
+# Η λίστα μοντέλων του AuraNovaTD
 DEFAULT_DATA = {
     "iPhone 13 / 13 Pro / 14 / 16e / 17e": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
     "iPhone 15 Pro": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0},
@@ -22,34 +18,26 @@ DEFAULT_DATA = {
     "iPhone 17 Pro Max": {"total_stock": 0, "stock": 0, "sold": 0, "total_cost": 0.0, "sold_profit": 0.0}
 }
 
-def load_inventory():
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                current_data = json.load(f)
-                # Προσθήκη νέων μοντέλων αν λείπουν από το αρχείο, χωρίς διαγραφή των παλιών
-                for model in DEFAULT_DATA:
-                    if model not in current_data:
-                        current_data[model] = DEFAULT_DATA[model]
-                return current_data
-        except:
-            return DEFAULT_DATA
-    return DEFAULT_DATA
-
-def save_inventory(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+# Φόρτωση δεδομένων από τα ασφαλή Secrets του Streamlit Cloud
+if "saved_data" in st.secrets:
+    try:
+        initial_data = json.loads(st.secrets["saved_data"])
+        # Συγχρονισμός αν λείπει κάποιο μοντέλο
+        for model in DEFAULT_DATA:
+            if model not in initial_data:
+                initial_data[model] = DEFAULT_DATA[model]
+    except:
+        initial_data = DEFAULT_DATA
+else:
+    initial_data = DEFAULT_DATA
 
 if "wms_data" not in st.session_state:
-    st.session_state.wms_data = load_inventory()
+    st.session_state.wms_data = initial_data
 
 inventory = st.session_state.wms_data
 
-# Εμφάνιση των προϊόντων με τη νέα σειρά
+# Εμφάνιση των προϊόντων
 for model in DEFAULT_DATA.keys():
-    if model not in inventory:
-        inventory[model] = DEFAULT_DATA[model]
-        
     stats = inventory[model]
     net_profit = stats["sold_profit"] - stats["total_cost"]
     
@@ -77,10 +65,8 @@ for model in DEFAULT_DATA.keys():
                     inventory[model]["total_stock"] += qty_in
                     inventory[model]["stock"] += qty_in
                     inventory[model]["total_cost"] += cost_in
-                    
                     st.session_state.wms_data = inventory
-                    save_inventory(inventory)
-                    st.success("Το Restock καταγράφηκε επιτυχώς!")
+                    st.success("Καταγράφηκε στη μνήμη! Θυμήσου να πατήσεις 'Οριστική Αποθήκευση' στο κάτω μέρος.")
                     st.rerun()
                 
         elif action == "💰 Καταγραφή Πώλησης":
@@ -94,11 +80,15 @@ for model in DEFAULT_DATA.keys():
                     inventory[model]["stock"] -= qty_out
                     inventory[model]["sold"] += qty_out
                     inventory[model]["sold_profit"] += price_out
-                    
                     st.session_state.wms_data = inventory
-                    save_inventory(inventory)
-                    st.success("Η πώληση καταγράφηκε επιτυχώς!")
+                    st.success("Καταγράφηκε στη μνήμη! Θυμήσου να πατήσεις 'Οριστική Αποθήκευση' στο κάτω μέρος.")
                     st.rerun()
                 else:
                     st.error("❌ Δεν έχεις τόσο στοκ στην αποθήκη!")
         st.markdown("---")
+
+# 💾 ΚΟΥΜΠΙ ΜΟΝΙΜΗΣ ΑΠΟΘΗΚΕΥΣΗΣ ΣΤΟ ΚΑΤΩ ΜΕΡΟΣ
+st.write("### 🔒 Ασφάλεια Δεδομένων AuraNovaTD")
+json_string = json.dumps(inventory, ensure_ascii=False)
+st.info("Για να μην χαθούν τα δεδομένα στο επόμενο reboot, αντέγραψε το παρακάτω κείμενο και βάλτο στα Secrets του Streamlit Cloud:")
+st.code(f'saved_data = {repr(json_string)}')
