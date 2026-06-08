@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraNovaTD WMS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 font-sans p-4">
+
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">📦 AuraNovaTD WMS</h1>
+        <p class="text-xs text-center text-gray-500 mb-4">HTML + Firebase Live Storage</p>
+        <div id="inventory-container" class="space-y-6">
+            <p class="text-center text-gray-600">Φόρτωση αποθήκης...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ΑΝΤΙΚΑΤΑΣΤΗΣΕ ΑΥΤΑ ΤΑ ΣΤΟΙΧΕΙΑ ΜΕ ΤΑ ΔΙΚΑ ΣΟΥ ΑΠΟ ΤΟ FIREBASE
+        const firebaseConfig = {
+            apiKey: "XXXXX",
+            authDomain: "XXXXX",
+            projectId: "XXXXX",
+            storageBucket: "XXXXX",
+            messagingSenderId: "XXXXX",
+            appId: "XXXXX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Τα μοντέλα σου
+        const models = [
+            "iPhone 13 / 13 Pro / 14 / 16e / 17e",
+            "iPhone 15 Pro",
+            "iPhone 15 Pro Max",
+            "iPhone 15 / 16",
+            "iPhone 16 Pro",
+            "iPhone 16 Pro Max",
+            "iPhone 17",
+            "iPhone 17 Pro",
+            "iPhone 17 Pro Max"
+        ];
+
+        const docRef = doc(db, "wms", "inventory");
+
+        // Αρχικοποίηση ή Φόρτωση Δεδομένων
+        async function loadInventory() {
+            const docSnap = await getDoc(docRef);
+            let data = {};
+
+            if (docSnap.exists()) {
+                data = docSnap.data();
+            }
+
+            // Συγχρονισμός αν λείπει κάποιο μοντέλο
+            models.forEach(model => {
+                if (!data[model]) {
+                    data[model] = { total_stock: 0, stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
+                }
+            });
+
+            renderInventory(data);
+        }
+
+        // Σχεδιασμός της σελίδας live
+        function renderInventory(data) {
+            const container = document.getElementById("inventory-container");
+            container.innerHTML = "";
+
+            for (const [model, stats] of Object.entries(data)) {
+                if (!models.includes(model)) continue;
+
+                const netProfit = (stats.sold_profit - stats.total_cost).toFixed(2);
+                
+                const card = document.createElement("div");
+                card.className = "border-b border-gray-200 pb-4 last:border-0";
+                card.innerHTML = `
+                    <h3 class="text-lg font-bold text-blue-600 mb-2">📱 ${model}</h3>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 mb-3">
+                        <div class="bg-gray-50 p-2 rounded"><b>Στοκ:</b> ${stats.stock}</div>
+                        <div class="bg-gray-50 p-2 rounded"><b>Πουλήθηκαν:</b> ${stats.sold}</div>
+                        <div class="bg-gray-50 p-2 rounded"><b>Αγορασμένα:</b> ${stats.total_stock}</div>
+                        <div class="bg-gray-50 p-2 rounded"><b>Κέρδος:</b> ${netProfit}€</div>
+                    </div>
+                    
+                    <div class="space-y-2 bg-gray-50 p-3 rounded-lg">
+                        <div class="flex gap-2">
+                            <button onclick="window.submitAction('${model}', 'restock')" class="w-1/2 bg-blue-500 text-white font-bold py-1 px-2 rounded text-xs active:bg-blue-700">🔄 Restock</button>
+                            <button onclick="window.submitAction('${model}', 'sale')" class="w-1/2 bg-green-500 text-white font-bold py-1 px-2 rounded text-xs active:bg-green-700">💰 Πώληση</button>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <input type="number" id="qty_${btoa(model)}" placeholder="Τεμάχια" class="w-1/2 p-1 border rounded bg-white" min="1">
+                            <input type="number" id="price_${btoa(model)}" placeholder="Ποσό (€)" class="w-1/2 p-1 border rounded bg-white" step="0.5">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+
+            // Δημιουργία global λειτουργίας για τα κουμπιά
+            window.submitAction = async (model, type) => {
+                const qtyInput = document.getElementById(`qty_${btoa(model)}`);
+                const priceInput = document.getElementById(`price_${btoa(model)}`);
+                
+                const qty = parseInt(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+
+                if (qty <= 0) {
+                    alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
+                    return;
+                }
+
+                if (type === 'restock') {
+                    data[model].total_stock += qty;
+                    data[model].stock += qty;
+                    data[model].total_cost += price;
+                } else if (type === 'sale') {
+                    if (data[model].stock < qty) {
+                        alert("❌ Δεν υπάρχει αρκετό στοκ στην αποθήκη!");
+                        return;
+                    }
+                    data[model].stock -= qty;
+                    data[model].sold += qty;
+                    data[model].sold_profit += price;
+                }
+
+                await setDoc(docRef, data);
+                qtyInput.value = "";
+                priceInput.value = "";
+                renderInventory(data);
+            };
+        }
+
+        loadInventory();
+    </script>
+</body>
+</html>
