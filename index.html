@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v7</title>
+    <title>AuraNovaTD WMS Ultra Secured v8</title>
+    <!-- Tailwind CSS για Pro Σχεδιασμό -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
 
+    <!-- 🔒 ΟΘΟΝΗ LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-gray-900 flex flex-col justify-center items-center z-50 px-4">
         <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
             <div class="text-center mb-4">
@@ -36,24 +38,29 @@
         </div>
     </div>
 
+    <!-- 📦 ΚΥΡΙΑ ΕΦΑΡΜΟΓΗ -->
     <div id="main-app" class="hidden">
         <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
             <div class="flex justify-between items-center mb-2">
-                <h1 class="text-2xl font-bold text-gray-800">📦 AuraNovaTD WMS v7 (Locked)</h1>
+                <!-- 🆕 ΕΝΗΜΕΡΩΣΗ ΤΙΤΛΟΥ ΣΕ v8 (Locked Decimals) -->
+                <h1 class="text-2xl font-bold text-gray-800">📦 AuraNovaTD WMS v8 (Locked)</h1>
                 <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
             </div>
             <p class="text-xs text-blue-500 font-semibold mb-4">Secured Supply Chain System</p>
             
+            <!-- Ειδοποιήσεις για Χαμηλό Στοκ -->
             <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
                 <span class="font-bold">⚠️ ΠΡΟΣΟΧΗ - ΧΑΜΗΛΟ ΣΤΟΚ:</span>
                 <ul id="alerts-list" class="list-disc list-inside mt-1"></ul>
             </div>
 
+            <!-- Κύρια Λίστα Αποθήκης -->
             <div id="inventory-container" class="space-y-6">
                 <p class="text-center text-gray-600">Φόρτωση εξελιγμένης αποθήκης...</p>
             </div>
         </div>
 
+        <!-- Ενότητα Ιστορικού Κινήσεων -->
         <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-3 flex justify-between items-center">
                 <span>📜 Ιστορικό Κινήσεων (Live Log)</span>
@@ -65,6 +72,7 @@
         </div>
     </div>
 
+    <!-- Firebase SDK Σύνδεση -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -204,7 +212,8 @@
                         </div>
                         <div class="flex gap-2 text-xs">
                             <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
-                            <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.5">
+                            <!-- 🆕 step="0.01" για να υποστηρίζει σεντς σωστά στον browser -->
+                            <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.01" min="0">
                         </div>
                     </div>
                 `;
@@ -245,6 +254,15 @@
                 if (type === 'sale' && parsedPrice === 0) {
                     alert("❌ Σφάλμα Ασφαλείας: Η τιμή πώλησης ΠΡΕΠΕΙ να είναι μεγαλύτερη από 0€!\n\nΑν δίνεις το προϊόν δωρεάν, πάτα το μωβ κουμπί 'Δωρεά'.");
                     return;
+                }
+
+                // 5. 🆕 ΕΛΕΓΧΟΣ ΔΕΚΑΔΙΚΩΝ ΨΗΦΙΩΝ (Μέχρι 2 δεκαδικά)
+                if (type !== 'donation' && priceRaw.includes('.')) {
+                    const decimals = priceRaw.split('.')[1];
+                    if (decimals && decimals.length > 2) {
+                        alert("❌ Σφάλμα: Το ποσό δεν μπορεί να έχει πάνω από 2 δεκαδικά ψηφία (π.χ. βάλε 15.50 και όχι 15.555)!");
+                        return;
+                    }
                 }
 
                 const price = type === 'donation' ? 0 : parsedPrice;
@@ -302,7 +320,6 @@
             };
         }
 
-        // Live Log
         function listenToTransactions() {
             const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"), limit(5));
             unsubscribeTransactions = onSnapshot(q, (snapshot) => {
