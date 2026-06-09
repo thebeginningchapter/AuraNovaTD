@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v10.2</title>
-    <!-- Tailwind CSS για Pro Σχεδιασμό -->
+    <title>AuraNovaTD WMS ERP Professional v10.3</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
 
-    <!-- 🔒 ΟΘΟΝΗ LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-gray-900 flex flex-col justify-center items-center z-50 px-4">
         <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
             <div class="text-center mb-4">
@@ -38,16 +36,14 @@
         </div>
     </div>
 
-    <!-- 📦 ΚΥΡΙΑ ΕΦΑΡΜΟΓΗ -->
     <div id="main-app" class="hidden">
         
-        <!-- 📊 ΓΕΝΙΚΟ DASHBOARD ADMIN (Εμφανίζεται μόνο στον Admin μαζί με την Έκδοση) -->
         <div id="admin-dashboard-section" class="max-w-md mx-auto bg-amber-950 text-white rounded-xl shadow-md overflow-hidden p-5 mb-6 hidden">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>📊</span> Γενικά Στατιστικά Επιχείρησης
                 </h2>
-                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.2</span>
+                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.3</span>
             </div>
             <div class="grid grid-cols-2 gap-3 text-center">
                 <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
@@ -79,22 +75,19 @@
             </div>
             <p id="user-welcome-msg" class="text-xs text-blue-500 font-semibold mb-4">Σύνδεση ως: ...</p>
             
-            <!-- Ειδοποιήσεις για Χαμηλό Στοκ -->
             <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
                 <span class="font-bold">⚠️ ΠΡΟΣΟΧΗ - ΧΑΜΗΛΟ ΣΤΟΚ:</span>
                 <ul id="alerts-list" class="list-disc list-inside mt-1"></ul>
             </div>
 
-            <!-- Κύρια Λίστα Αποθήκης -->
             <div id="inventory-container" class="space-y-6">
                 <p class="text-center text-gray-600">Φόρτωση εξελιγμένης αποθήκης...</p>
             </div>
         </div>
 
-        <!-- Ενότητα Ιστορικού Κινήσεων (Για όλους) -->
         <div id="user-logs-section" class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
             <h2 class="text-sm font-bold text-gray-800 mb-3 flex justify-between items-center">
-                <span>📜 Ιστορικό Κινήσεων (Live Log)</span>
+                <span>📜 Ιστορικό Κινήσεων (ERP Live Log)</span>
                 <span class="text-[10px] font-normal text-gray-500">Τελευταίες 5 κινήσεις</span>
             </h2>
             <div id="transactions-container" class="space-y-2 text-xs">
@@ -102,7 +95,6 @@
             </div>
         </div>
 
-        <!-- 🔒 ΚΡΥΦΟ ADMIN LOG (Εμφανίζεται μόνο στον Admin) -->
         <div id="admin-logs-section" class="max-w-md mx-auto bg-amber-900 rounded-xl shadow-md overflow-hidden p-6 hidden">
             <h2 class="text-sm font-bold text-amber-100 mb-3 flex justify-between items-center">
                 <span>🛠️ Ιστορικό Διαχειριστή (Admin Actions Log)</span>
@@ -114,7 +106,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Σύνδεση -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -149,7 +140,7 @@
 
         const MIN_SAFETY_STOCK = 3;
         
-        // 🔒 ΟΡΙΣΜΟΣ ΔΙΑΧΕΙΡΙΣΤΗ (Μόνο αυτό το email έχει πρόσβαση στις διορθώσεις)
+        // 🔒 ΟΡΙΣΜΟΣ ΔΙΑΧΕΙΡΙΣΤΗ
         const ADMIN_EMAIL = "dtsagkadakis@gmail.com"; 
         let isAdminAuthenticated = false;
 
@@ -195,7 +186,6 @@
             const currentUser = auth.currentUser;
             
             if (!isAdminAuthenticated) {
-                // Έλεγχος αν ο συνδεδεμένος χρήστης είναι ΑΚΡΙΒΩΣ ο Admin
                 if (currentUser && currentUser.email === ADMIN_EMAIL) {
                     isAdminAuthenticated = true;
                     showAdminInterface();
@@ -328,7 +318,7 @@
                         
                         <div class="space-y-2 bg-gray-100/50 p-3 rounded-lg">
                             <div class="flex gap-1.5">
-                                <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Restock</button>
+                                <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Αγορά</button>
                                 <button onclick="window.submitAction('${model}', 'sale')" class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
                                 <button onclick="window.submitAction('${model}', 'donation')" class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
                             </div>
@@ -336,6 +326,7 @@
                                 <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
                                 <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.01" min="0">
                             </div>
+                            <input type="text" id="ref_${safeId}" placeholder="Όνομα Πελάτη / Προμηθευτή..." class="w-full p-1.5 border rounded-md bg-white text-xs focus:border-blue-500 focus:outline-none">
                         </div>
                     `;
                 } else {
@@ -441,11 +432,13 @@
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 const qtyInput = document.getElementById(`qty_${safeId}`);
                 const priceInput = document.getElementById(`price_${safeId}`);
+                const refInput = document.getElementById(`ref_${safeId}`); // Λήψη του input στοιχείων
                 const currentUser = auth.currentUser;
                 
                 const qty = parseInt(qtyInput.value) || 0;
                 const priceRaw = priceInput.value.trim();
                 const parsedPrice = parseFloat(priceRaw);
+                const referenceValue = refInput.value.trim() || "Ιδιωτική Κίνηση"; // Default αν μείνει κενό
                 
                 if (qty <= 0) {
                     alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
@@ -481,7 +474,7 @@
                 if (type === 'restock') {
                     cachedData[model].stock = parseInt(cachedData[model].stock) + qty;
                     cachedData[model].total_cost = parseFloat(cachedData[model].total_cost) + price;
-                    logType = "🔄 Restock";
+                    logType = "🔄 Αγορά";
                 } else if (type === 'sale') {
                     if (parseInt(cachedData[model].stock) < qty) {
                         alert("❌ Δεν υπάρχει αρκετό στοκ!");
@@ -501,24 +494,34 @@
                     logType = "🎁 Δωρεά";
                 }
 
-                await setDoc(docRef, cachedData);
+                try {
+                    await setDoc(docRef, cachedData);
 
-                const now = new Date();
-                const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
-                
-                await addDoc(collection(db, "transactions"), {
-                    timestamp: now,
-                    timeLabel: timeString,
-                    type: logType,
-                    model: model,
-                    qty: qty,
-                    price: price,
-                    user: currentUser ? currentUser.email : "Άγνωστος"
-                });
+                    const now = new Date();
+                    const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    await addDoc(collection(db, "transactions"), {
+                        timestamp: now,
+                        timeLabel: timeString,
+                        type: logType,
+                        model: model,
+                        qty: qty,
+                        price: price,
+                        reference: referenceValue, // Αποθήκευση στοιχείων Πελάτη/Προμηθευτή
+                        user: currentUser ? currentUser.email : "Άγνωστος"
+                    });
 
-                qtyInput.value = "";
-                priceInput.value = "";
-                renderInventory(cachedData);
+                    // Καθαρισμός των πεδίων της συγκεκριμένης κάρτας
+                    qtyInput.value = "";
+                    priceInput.value = "";
+                    refInput.value = "";
+                    
+                    // Ομαλή επανασχεδίαση χωρίς Reload
+                    renderInventory(cachedData);
+                    
+                } catch (error) {
+                    alert("❌ Σφάλμα δικτύου κατά την καταχώρηση.");
+                }
             };
         }
 
@@ -533,20 +536,33 @@
                 }
                 snapshot.forEach((doc) => {
                     const tx = doc.data();
-                    let colorClass = "text-blue-600 bg-blue-50";
-                    if (tx.type.includes("Πώληση")) colorClass = "text-green-600 bg-green-50";
-                    if (tx.type.includes("Δωρεά")) colorClass = "text-purple-600 bg-purple-50";
+                    let colorClass = "text-blue-600 bg-blue-50 border-blue-100";
+                    let entityPrefix = "🏢 Στοιχεία:";
+                    
+                    if (tx.type.includes("Πώληση")) {
+                        colorClass = "text-green-600 bg-green-50 border-green-100";
+                        entityPrefix = "👤 Πελάτης:";
+                    }
+                    if (tx.type.includes("Δωρεά")) {
+                        colorClass = "text-purple-600 bg-purple-50 border-purple-100";
+                        entityPrefix = "🎁 Σχόλιο/Ref:";
+                    }
+                    if (tx.type.includes("Αγορά")) {
+                        entityPrefix = "🏭 Προμηθευτής:";
+                    }
                     
                     const userLabel = tx.user ? tx.user.split('@')[0] : "user";
+                    const displayRef = tx.reference ? tx.reference : "Χωρίς στοιχεία";
                     
                     const logRow = document.createElement("div");
-                    logRow.className = `p-2 rounded border border-gray-100 flex justify-between items-center ${colorClass}`;
+                    logRow.className = `p-2.5 rounded-xl border flex justify-between items-center ${colorClass}`;
                     logRow.innerHTML = `
                         <div>
                             <span class="font-bold">${tx.type}</span>: ${tx.qty}x ${tx.model}
-                            <div class="text-[10px] text-gray-400">${tx.timeLabel} • Από: <span class="font-semibold">${userLabel}</span></div>
+                            <div class="text-[11px] font-bold text-gray-700 mt-0.5">${entityPrefix} <span class="underline">${displayRef}</span></div>
+                            <div class="text-[10px] text-gray-400 mt-0.5">${tx.timeLabel} • Από: <span class="font-semibold">${userLabel}</span></div>
                         </div>
-                        <span class="font-semibold text-gray-700">${tx.price.toFixed(2)}€</span>
+                        <span class="font-black text-gray-700 text-sm">${tx.price.toFixed(2)}€</span>
                     `;
                     txContainer.appendChild(logRow);
                 });
