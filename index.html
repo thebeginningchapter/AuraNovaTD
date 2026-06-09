@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v10.1</title>
+    <title>AuraNovaTD WMS Ultra Secured v10.2</title>
     <!-- Tailwind CSS για Pro Σχεδιασμό -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -47,7 +47,7 @@
                 <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>📊</span> Γενικά Στατιστικά Επιχείρησης
                 </h2>
-                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.1</span>
+                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.2</span>
             </div>
             <div class="grid grid-cols-2 gap-3 text-center">
                 <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
@@ -71,14 +71,13 @@
 
         <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
             <div class="flex justify-between items-center mb-2">
-                <!-- Αφαιρέθηκε η έκδοση από εδώ -->
                 <h1 class="text-xl font-bold text-gray-800">📦 AuraNovaTD WMS</h1>
                 <div class="flex gap-2">
                     <button onclick="window.toggleAdminPanel()" id="admin-btn" class="text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200">⚙️ Διορθώσεις</button>
                     <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
                 </div>
             </div>
-            <p class="text-xs text-blue-500 font-semibold mb-4">Secured Supply Chain System</p>
+            <p id="user-welcome-msg" class="text-xs text-blue-500 font-semibold mb-4">Σύνδεση ως: ...</p>
             
             <!-- Ειδοποιήσεις για Χαμηλό Στοκ -->
             <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
@@ -150,8 +149,8 @@
 
         const MIN_SAFETY_STOCK = 3;
         
-        // 🔒 ΟΡΙΣΜΟΣ ΔΙΑΧΕΙΡΙΣΤΗ (Βάλε εδώ το email σου)
-        const ADMIN_EMAIL = "auranovatd@gmail.com"; 
+        // 🔒 ΟΡΙΣΜΟΣ ΔΙΑΧΕΙΡΙΣΤΗ (Μόνο αυτό το email έχει πρόσβαση στις διορθώσεις)
+        const ADMIN_EMAIL = "dtsagkadakis@gmail.com"; 
         let isAdminAuthenticated = false;
 
         const docRef = doc(db, "wms", "inventory");
@@ -163,6 +162,7 @@
             if (user) {
                 document.getElementById("login-screen").classList.add("hidden");
                 document.getElementById("main-app").classList.remove("hidden");
+                document.getElementById("user-welcome-msg").innerText = `Χρήστης: ${user.email}`;
                 loadInventory();
                 listenToTransactions();
             } else {
@@ -175,7 +175,7 @@
         });
 
         window.loginWithFirebase = async function() {
-            const email = document.getElementById("email-input").value;
+            const email = document.getElementById("email-input").value.trim();
             const password = document.getElementById("password-input").value;
             const errorMsg = document.getElementById("login-error");
             try {
@@ -191,12 +191,11 @@
             await signOut(auth);
         };
 
-        // Έλεγχος Admin Panel μέσω των στοιχείων Firebase Login (χωρίς PIN)
         window.toggleAdminPanel = function() {
             const currentUser = auth.currentUser;
             
             if (!isAdminAuthenticated) {
-                // Έλεγχος αν ο συνδεδεμένος χρήστης είναι ο Admin
+                // Έλεγχος αν ο συνδεδεμένος χρήστης είναι ΑΚΡΙΒΩΣ ο Admin
                 if (currentUser && currentUser.email === ADMIN_EMAIL) {
                     isAdminAuthenticated = true;
                     showAdminInterface();
@@ -389,6 +388,7 @@
 
             window.saveDirectEdit = async (model) => {
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
+                const currentUser = auth.currentUser;
                 
                 const newStock = parseInt(document.getElementById(`edit_stock_${safeId}`).value) || 0;
                 const newSold = parseInt(document.getElementById(`edit_sold_${safeId}`).value) || 0;
@@ -426,7 +426,8 @@
                         timestamp: now,
                         timeLabel: timeString,
                         model: model,
-                        details: changesText
+                        details: changesText,
+                        adminUser: currentUser ? currentUser.email : "Άγνωστος Admin"
                     });
 
                     alert(`✅ Επιτυχής διόρθωση και καταγραφή log για το ${model}!`);
@@ -440,6 +441,7 @@
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 const qtyInput = document.getElementById(`qty_${safeId}`);
                 const priceInput = document.getElementById(`price_${safeId}`);
+                const currentUser = auth.currentUser;
                 
                 const qty = parseInt(qtyInput.value) || 0;
                 const priceRaw = priceInput.value.trim();
@@ -510,7 +512,8 @@
                     type: logType,
                     model: model,
                     qty: qty,
-                    price: price
+                    price: price,
+                    user: currentUser ? currentUser.email : "Άγνωστος"
                 });
 
                 qtyInput.value = "";
@@ -534,12 +537,14 @@
                     if (tx.type.includes("Πώληση")) colorClass = "text-green-600 bg-green-50";
                     if (tx.type.includes("Δωρεά")) colorClass = "text-purple-600 bg-purple-50";
                     
+                    const userLabel = tx.user ? tx.user.split('@')[0] : "user";
+                    
                     const logRow = document.createElement("div");
                     logRow.className = `p-2 rounded border border-gray-100 flex justify-between items-center ${colorClass}`;
                     logRow.innerHTML = `
                         <div>
                             <span class="font-bold">${tx.type}</span>: ${tx.qty}x ${tx.model}
-                            <div class="text-[10px] text-gray-400">${tx.timeLabel}</div>
+                            <div class="text-[10px] text-gray-400">${tx.timeLabel} • Από: <span class="font-semibold">${userLabel}</span></div>
                         </div>
                         <span class="font-semibold text-gray-700">${tx.price.toFixed(2)}€</span>
                     `;
@@ -561,6 +566,7 @@
 
                 snapshot.forEach((doc) => {
                     const log = doc.data();
+                    const adminLabel = log.adminUser ? log.adminUser.split('@')[0] : "admin";
                     const logRow = document.createElement("div");
                     logRow.className = "p-2 rounded bg-amber-950/60 border border-amber-700 text-amber-100 mb-1";
                     logRow.innerHTML = `
@@ -569,7 +575,7 @@
                             <span>⏱️ ${log.timeLabel}</span>
                         </div>
                         <div class="text-[11px] mt-0.5 text-amber-100 font-medium p-1">
-                            🔧 Διόρθωση ➔ ${log.details}
+                            🔧 Διόρθωση [${adminLabel}] ➔ ${log.details}
                         </div>
                     `;
                     adminTxContainer.appendChild(logRow);
