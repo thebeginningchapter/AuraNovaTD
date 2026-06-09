@@ -39,7 +39,7 @@
     <div id="main-app" class="hidden">
         <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
             <div class="flex justify-between items-center mb-2">
-                <h1 class="text-2xl font-bold text-gray-800">📦 AuraNovaTD WMS</h1>
+                <h1 class="text-2xl font-bold text-gray-800">📦 AuraNovaTD WMS v7 (Locked)</h1>
                 <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
             </div>
             <p class="text-xs text-blue-500 font-semibold mb-4">Secured Supply Chain System</p>
@@ -204,7 +204,7 @@
                         </div>
                         <div class="flex gap-2 text-xs">
                             <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
-                            <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.5" min="0">
+                            <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.5">
                         </div>
                     </div>
                 `;
@@ -247,7 +247,6 @@
                     return;
                 }
 
-                // Απόδοση τελικής τιμής
                 const price = type === 'donation' ? 0 : parsedPrice;
 
                 if (!cachedData[model].hasOwnProperty('stock')) cachedData[model].stock = 0;
@@ -303,6 +302,7 @@
             };
         }
 
+        // Live Log
         function listenToTransactions() {
             const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"), limit(5));
             unsubscribeTransactions = onSnapshot(q, (snapshot) => {
