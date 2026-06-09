@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS ERP Professional v10.4</title>
-    <!-- Tailwind CSS v4 -->
+    <title>AuraNovaTD WMS ERP Professional v10.5</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Bulletproof Fallbacks για το Theme Toggle */
+        html.dark { background-color: #111827 !important; color: #f9fafb !important; }
+        html.dark body { background-color: #111827 !important; }
+    </style>
     <script>
-        // Άμεση εφαρμογή του theme πριν το render για αποφυγή φλασαρίσματος λευκού χρώματος
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
         }
     </script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 font-sans p-4 text-gray-800 dark:text-gray-100 transition-colors duration-200">
 
-    <!-- 🔒 ΟΘΟΝΗ LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-gray-900 flex flex-col justify-center items-center z-50 px-4">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-sm border border-transparent dark:border-gray-700">
             <div class="text-center mb-4">
@@ -44,16 +48,14 @@
         </div>
     </div>
 
-    <!-- 📦 ΚΥΡΙΑ ΕΦΑΡΜΟΓΗ -->
     <div id="main-app" class="hidden">
         
-        <!-- 📊 ΓΕΝΙΚΟ DASHBOARD ADMIN -->
         <div id="admin-dashboard-section" class="max-w-md mx-auto bg-amber-950 text-white rounded-xl shadow-md overflow-hidden p-5 mb-4 hidden">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <span>📊</span> Γενικά Στατιστικά Επιχείρησης
+                    <span>📊</span> Γενικά Στατιστικά Επιχείρησης (Περιλαμβάνει Καταργημένα)
                 </h2>
-                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.4</span>
+                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.5</span>
             </div>
             <div class="grid grid-cols-2 gap-3 text-center">
                 <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
@@ -75,7 +77,6 @@
             </div>
         </div>
 
-        <!-- ⚙️ PANEL ΠΡΟΣΘΗΚΗΣ ΝΕΩΝ ΠΡΟΪΟΝΤΩΝ (Μόνο για Admin) -->
         <div id="admin-add-product-section" class="max-w-md mx-auto bg-white dark:bg-gray-800 border-2 border-dashed border-amber-500 dark:border-amber-600 rounded-xl p-4 mb-4 hidden shadow-sm">
             <h3 class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">✨ Προσθήκη Νέου Κωδικού / Προϊόντος</h3>
             <div class="flex gap-2">
@@ -85,7 +86,6 @@
             </div>
         </div>
 
-        <!-- ΚΥΡΙΟΣ ΠΙΝΑΚΑΣ ΑΠΟΘΗΚΗΣ -->
         <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-2">
                 <h1 class="text-xl font-bold text-gray-800 dark:text-white">📦 AuraNovaTD WMS</h1>
@@ -97,19 +97,16 @@
             </div>
             <p id="user-welcome-msg" class="text-xs text-blue-500 font-semibold mb-4">Σύνδεση ως: ...</p>
             
-            <!-- Ειδοποιήσεις για Χαμηλό Στοκ -->
             <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-lg text-xs text-red-700 dark:text-red-300">
                 <span class="font-bold">⚠️ ΠΡΟΣΟΧΗ - ΧΑΜΗΛΟ ΣΤΟΚ:</span>
                 <ul id="alerts-list" class="list-disc list-inside mt-1"></ul>
             </div>
 
-            <!-- Κύρια Λίστα Αποθήκης -->
             <div id="inventory-container" class="space-y-4">
                 <p class="text-center text-gray-600 dark:text-gray-400 text-xs">Φόρτωση δυναμικής αποθήκης...</p>
             </div>
         </div>
 
-        <!-- Ενότητα Ιστορικού Κινήσεων -->
         <div id="user-logs-section" class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <h2 class="text-sm font-bold text-gray-800 dark:text-white mb-3 flex justify-between items-center">
                 <span>📜 Ιστορικό Κινήσεων (ERP Live Log)</span>
@@ -120,7 +117,6 @@
             </div>
         </div>
 
-        <!-- 🔒 ΚΡΥΦΟ ADMIN LOG -->
         <div id="admin-logs-section" class="max-w-md mx-auto bg-amber-900 rounded-xl shadow-md overflow-hidden p-6 hidden">
             <h2 class="text-sm font-bold text-amber-100 mb-3 flex justify-between items-center">
                 <span>🛠️ Ιστορικό Διαχειριστή (Admin Actions Log)</span>
@@ -132,7 +128,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Σύνδεση -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -153,7 +148,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // 📈 ΠΛΕΟΝ ΤΑ ΜΟΝΤΕΛΑ ΦΟΡΤΩΝΟΝΤΑΙ ΔΥΝΑΜΙΚΑ ΑΠΟ ΤΗ ΒΑΣΗ
         let models = [];
         const MIN_SAFETY_STOCK = 3;
         const ADMIN_EMAIL = "dtsagkadakis@gmail.com"; 
@@ -164,14 +158,19 @@
         let unsubscribeTransactions = null;
         let unsubscribeAdminTransactions = null;
 
-        // --- THEME TOGGLE LOGIC ---
+        // --- ☀️ 🌙 ΔΙΟΡΘΩΜΕΝΟ THEME TOGGLE LOGIC ---
         window.toggleTheme = function() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById("theme-btn").innerText = isDark ? "☀️" : "🌙";
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById("theme-btn").innerText = "🌙";
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById("theme-btn").innerText = "☀️";
+            }
         };
         
-        // Αρχικοποίηση εικονιδίου κουμπιού theme
         if (localStorage.getItem('theme') === 'dark') {
             document.getElementById("theme-btn").innerText = "☀️";
         }
@@ -243,7 +242,6 @@
             if (unsubscribeAdminTransactions) unsubscribeAdminTransactions();
         }
 
-        // ✨ ΛΕΙΤΟΥΡΓΙΑ ΠΡΟΣΘΗΚΗΣ ΝΕΟΥ ΠΡΟΪΟΝΤΟΣ
         window.addNewProduct = async function() {
             const input = document.getElementById("new-product-name");
             const name = input.value.trim();
@@ -251,8 +249,8 @@
             if (!name) { alert("❌ Πληκτρολογήστε ένα όνομα για το προϊόν!"); return; }
             if (cachedData && cachedData[name]) { alert("❌ Αυτό το προϊόν υπάρχει ήδη στην αποθήκη!"); return; }
 
-            // Αρχικοποίηση δομής ERP για το νέο προϊόν
-            cachedData[name] = { stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
+            // Προσθήκη status: 'active' εξορισμού
+            cachedData[name] = { stock: 0, sold: 0, total_cost: 0, sold_profit: 0, status: 'active' };
             models = Object.keys(cachedData).sort();
 
             try {
@@ -265,14 +263,35 @@
             }
         };
 
+        // 🔄 ΑΛΛΑΓΗ ΚΑΤΑΣΤΑΣΗΣ ΠΡΟΪΟΝΤΟΣ (Active / Frozen / Archived)
+        window.changeProductStatus = async function(model, newStatus) {
+            if (!cachedData[model]) return;
+            cachedData[model].status = newStatus;
+            
+            try {
+                await setDoc(docRef, cachedData);
+                const now = new Date();
+                const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
+                
+                await addDoc(collection(db, "admin_logs"), {
+                    timestamp: now,
+                    timeLabel: timeString,
+                    model: model,
+                    details: `Αλλαγή κατάστασης σε: ${newStatus.toUpperCase()}`,
+                    adminUser: auth.currentUser ? auth.currentUser.email : "Admin"
+                });
+                
+                renderInventory(cachedData);
+            } catch (error) {
+                alert("❌ Σφάλμα κατά την αλλαγή κατάστασης του προϊόντος.");
+            }
+        };
+
         async function loadInventory() {
             try {
                 const docSnap = await getDoc(docRef);
                 let data = {};
-                if (docSnap.exists()) {
-                    data = docSnap.data();
-                }
-                // Διαβάζουμε δυναμικά τα κλειδιά από τη Firestore και τα ταξινομούμε αλφαβητικά
+                if (docSnap.exists()) { data = docSnap.data(); }
                 models = Object.keys(data).sort();
                 cachedData = data;
                 renderInventory(data);
@@ -282,27 +301,19 @@
         }
 
         function calculateGlobalStats(data) {
-            let totalCost = 0;
-            let totalRevenues = 0;
-            let totalStock = 0;
-
+            let totalCost = 0; let totalRevenues = 0; let totalStock = 0;
             models.forEach(model => {
                 const stats = data[model];
                 totalCost += stats.hasOwnProperty('total_cost') ? parseFloat(stats.total_cost) : 0;
                 totalRevenues += stats.hasOwnProperty('sold_profit') ? parseFloat(stats.sold_profit) : 0;
                 totalStock += stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
             });
-
             const netProfit = totalRevenues - totalCost;
-
             document.getElementById("dash-total-cost").innerText = totalCost.toFixed(2) + "€";
             document.getElementById("dash-total-revenues").innerText = totalRevenues.toFixed(2) + "€";
             document.getElementById("dash-net-profit").innerText = netProfit.toFixed(2) + "€";
             document.getElementById("dash-total-stock").innerText = totalStock + " τμχ";
-            
-            document.getElementById("dash-net-profit").className = netProfit >= 0 
-                ? "text-base font-black mt-0.5 text-green-400" 
-                : "text-base font-black mt-0.5 text-red-400";
+            document.getElementById("dash-net-profit").className = netProfit >= 0 ? "text-base font-black mt-0.5 text-green-400" : "text-base font-black mt-0.5 text-red-400";
         }
 
         function renderInventory(data) {
@@ -310,21 +321,24 @@
             const alertsList = document.getElementById("alerts-list");
             const alertsContainer = document.getElementById("alerts-container");
             
-            container.innerHTML = "";
-            alertsList.innerHTML = "";
+            container.innerHTML = ""; alertsList.innerHTML = "";
             let hasAlerts = false;
 
             calculateGlobalStats(data);
 
-            // Έλεγχος αν η αποθήκη είναι τελείως άδεια
             if (models.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 italic text-xs p-4">Η αποθήκη είναι άδεια. ${isAdminAuthenticated ? 'Προσθέστε το πρώτο προϊόν παραπάνω!' : 'Συνδεθείτε ως Admin για προσθήκη προϊόντων.'}</p>`;
+                container.innerHTML = `<p class="text-center text-gray-500 italic text-xs p-4">Η αποθήκη είναι άδεια.</p>`;
                 alertsContainer.classList.add("hidden");
                 return;
             }
 
             models.forEach(model => {
                 const stats = data[model];
+                const itemStatus = stats.status || 'active'; // default fallback
+
+                // Αν το προϊόν είναι καταργημένο (archived) και ο συνδεδεμένος ΔΕΝ είναι admin, το κρύβουμε τελείως!
+                if (itemStatus === 'archived' && !isAdminAuthenticated) { return; }
+
                 const currentStock = stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
                 const soldCount = stats.hasOwnProperty('sold') ? parseInt(stats.sold) : 0;
                 const totalCost = stats.hasOwnProperty('total_cost') ? parseFloat(stats.total_cost) : 0;
@@ -334,10 +348,12 @@
                 const netProfit = (soldProfit - totalCost).toFixed(2);
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 
-                const isLowStock = currentStock > 0 && currentStock < MIN_SAFETY_STOCK;
-                const cardBg = isLowStock 
-                    ? "bg-red-50/60 dark:bg-red-950/20 border-red-200 dark:border-red-900/60" 
-                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700";
+                const isLowStock = currentStock > 0 && currentStock < MIN_SAFETY_STOCK && itemStatus === 'active';
+                
+                let cardBg = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700";
+                if (isLowStock) cardBg = "bg-red-50/60 dark:bg-red-950/20 border-red-200 dark:border-red-900/60";
+                if (itemStatus === 'frozen') cardBg = "bg-blue-50/40 dark:bg-slate-900/40 border-blue-200 dark:border-slate-800 opacity-80";
+                if (itemStatus === 'archived') cardBg = "bg-gray-200/50 dark:bg-gray-950/40 border-gray-300 dark:border-gray-900 border-2 border-dashed";
 
                 if (isLowStock) {
                     hasAlerts = true;
@@ -350,10 +366,14 @@
                 card.className = `border rounded-xl p-4 shadow-sm transition-all ${cardBg}`;
                 
                 if (!isAdminAuthenticated) {
-                    // 👤 ΠΡΟΒΟΛΗ ΧΡΗΣΤΗ (DARK MODE READY)
+                    // 👤 ΠΡΟΒΟΛΗ ΧΡΗΣΤΗ
+                    const isFrozen = itemStatus === 'frozen';
                     card.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-base font-bold text-gray-800 dark:text-white">📱 ${model}</h3>
+                            <h3 class="text-base font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                                <span>📱</span> ${model}
+                            </h3>
+                            ${isFrozen ? '<span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">🔒 ΠΑΓΩΜΕΝΟ</span>' : ''}
                             ${isLowStock ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">REORDER</span>' : ''}
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-300 mb-3">
@@ -363,25 +383,36 @@
                             <div class="bg-gray-100/80 dark:bg-gray-700/50 p-2 rounded"><b>Κέρδος:</b> <span class="${netProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} font-medium">${netProfit}€</span></div>
                         </div>
                         
-                        <div class="space-y-2 bg-gray-100/50 dark:bg-gray-700/30 p-3 rounded-lg">
+                        <div class="space-y-2 bg-gray-100/50 dark:bg-gray-700/30 p-3 rounded-lg ${isFrozen ? 'pointer-events-none opacity-40' : ''}">
                             <div class="flex gap-1.5">
-                                <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Αγορά</button>
-                                <button onclick="window.submitAction('${model}', 'sale')" class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
-                                <button onclick="window.submitAction('${model}', 'donation')" class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
+                                <button onclick="window.submitAction('${model}', 'restock')" ${isFrozen?'disabled':''} class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Αγορά</button>
+                                <button onclick="window.submitAction('${model}', 'sale')" ${isFrozen?'disabled':''} class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
+                                <button onclick="window.submitAction('${model}', 'donation')" ${isFrozen?'disabled':''} class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
                             </div>
                             <div class="flex gap-2 text-xs">
-                                <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none" min="1">
-                                <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none" step="0.01" min="0">
+                                <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" ${isFrozen?'disabled':''} class="w-1/2 p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none" min="1">
+                                <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" ${isFrozen?'disabled':''} class="w-1/2 p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none" step="0.01" min="0">
                             </div>
-                            <input type="text" id="ref_${safeId}" placeholder="Όνομα Πελάτη / Προμηθευτή..." class="w-full p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs focus:border-blue-500 focus:outline-none">
+                            <input type="text" id="ref_${safeId}" placeholder="Όνομα Πελάτη / Προμηθευτή..." ${isFrozen?'disabled':''} class="w-full p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs focus:border-blue-500 focus:outline-none">
                         </div>
                     `;
                 } else {
                     // ⚙️ ΠΛΗΡΕΣ ADMIN PANEL
+                    let statusBadge = `<span class="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded font-bold">ACTIVE</span>`;
+                    if (itemStatus === 'frozen') statusBadge = `<span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold">⏸️ FROZEN</span>`;
+                    if (itemStatus === 'archived') statusBadge = `<span class="text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded font-bold">❌ ΚΑΤΑ Fries / ARCHIVED</span>`;
+
                     card.innerHTML = `
                         <div class="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-900 p-4 rounded-xl shadow-inner">
                             <div class="flex justify-between items-center border-b border-amber-200 dark:border-amber-900 pb-2 mb-3">
-                                <h3 class="text-xs font-black text-amber-950 dark:text-amber-300 uppercase tracking-wider">🛠️ Διόρθωση Δεδομένων: ${model}</h3>
+                                <h3 class="text-xs font-black text-amber-950 dark:text-amber-300 uppercase tracking-wider">🛠️ Διαχείριση: ${model}</h3>
+                                ${statusBadge}
+                            </div>
+
+                            <div class="flex gap-1 mb-3 bg-amber-100/60 dark:bg-amber-900/40 p-1.5 rounded-lg border border-amber-200 dark:border-amber-800">
+                                <button onclick="window.changeProductStatus('${model}', 'active')" class="flex-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 font-bold p-1 rounded text-[10px] border border-gray-300 dark:border-gray-600">▶️ Ενεργό</button>
+                                <button onclick="window.changeProductStatus('${model}', 'frozen')" class="flex-1 bg-blue-600 text-white hover:bg-blue-700 font-bold p-1 rounded text-[10px]">⏸️ Πάγωμα</button>
+                                <button onclick="window.changeProductStatus('${model}', 'archived')" class="flex-1 bg-red-700 text-white hover:bg-red-800 font-bold p-1 rounded text-[10px]">❌ Κατάργηση</button>
                             </div>
 
                             <div class="space-y-2 text-xs text-amber-900 dark:text-amber-200">
@@ -447,7 +478,10 @@
 
                 const changesText = changesArr.length > 0 ? changesArr.join(" | ") : "Ξαναπατήθηκε αποθήκευση χωρίς αλλαγές";
 
-                cachedData[model] = { stock: newStock, sold: newSold, total_cost: newCost, sold_profit: newProfit };
+                cachedData[model].stock = newStock;
+                cachedData[model].sold = newSold;
+                cachedData[model].total_cost = newCost;
+                cachedData[model].sold_profit = newProfit;
 
                 try {
                     await setDoc(docRef, cachedData);
@@ -455,7 +489,7 @@
                     const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
                     
                     await addDoc(collection(db, "admin_logs"), {
-                        timestamp: now, timeLabel: timeString, model: model, details: changesText, adminUser: currentUser ? currentUser.email : "Άγνωστος Admin"
+                        timestamp: now, timeLabel: timeString, model: model, details: changesText, adminUser: currentUser ? currentUser.email : "Admin"
                     });
 
                     alert(`✅ Επιτυχής διόρθωση για το ${model}!`);
@@ -466,6 +500,12 @@
             };
 
             window.submitAction = async (model, type) => {
+                // Έλεγχος ασφαλείας σε περίπτωση που πάει να γίνει κίνηση σε παγωμένο/καταργημένο μέσω κώδικα
+                if (cachedData[model].status && cachedData[model].status !== 'active') {
+                    alert("❌ Η κίνηση απ someαγορεύεται. Το προϊόν δεν είναι ενεργό!");
+                    return;
+                }
+
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 const qtyInput = document.getElementById(`qty_${safeId}`);
                 const priceInput = document.getElementById(`price_${safeId}`);
@@ -513,14 +553,11 @@
                     const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
                     
                     await addDoc(collection(db, "transactions"), {
-                        timestamp: now, timeLabel: timeString, type: logType, model: model, qty: qty, price: price, reference: referenceValue, user: currentUser ? currentUser.email : "Άγνωστος"
+                        timestamp: now, timeLabel: timeString, type: logType, model: model, qty: qty, price: price, reference: referenceValue, user: currentUser ? currentUser.email : "user"
                     });
 
-                    qtyInput.value = "";
-                    priceInput.value = "";
-                    refInput.value = "";
+                    qtyInput.value = ""; priceInput.value = ""; refInput.value = "";
                     renderInventory(cachedData);
-                    
                 } catch (error) {
                     alert("❌ Σφάλμα δικτύου κατά την καταχώρηση.");
                 }
@@ -549,9 +586,7 @@
                         colorClass = "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900/50";
                         entityPrefix = "🎁 Σχόλιο/Ref:";
                     }
-                    if (tx.type.includes("Αγορά")) {
-                        entityPrefix = "🏭 Προμηθευτής:";
-                    }
+                    if (tx.type.includes("Αγορά")) { entityPrefix = "🏭 Προμηθευτής:"; }
                     
                     const userLabel = tx.user ? tx.user.split('@')[0] : "user";
                     const displayRef = tx.reference ? tx.reference : "Χωρίς στοιχεία";
@@ -576,12 +611,10 @@
             unsubscribeAdminTransactions = onSnapshot(q, (snapshot) => {
                 const adminTxContainer = document.getElementById("admin-transactions-container");
                 adminTxContainer.innerHTML = "";
-                
                 if (snapshot.empty) {
                     adminTxContainer.innerHTML = `<p class="text-amber-300 italic">Δεν έχουν καταγραφεί ακόμα χειροκίνητες διορθώσεις.</p>`;
                     return;
                 }
-
                 snapshot.forEach((doc) => {
                     const log = doc.data();
                     const adminLabel = log.adminUser ? log.adminUser.split('@')[0] : "admin";
