@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v9</title>
+    <title>AuraNovaTD WMS Ultra Secured v10.1</title>
     <!-- Tailwind CSS για Pro Σχεδιασμό -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -40,12 +40,41 @@
 
     <!-- 📦 ΚΥΡΙΑ ΕΦΑΡΜΟΓΗ -->
     <div id="main-app" class="hidden">
+        
+        <!-- 📊 ΓΕΝΙΚΟ DASHBOARD ADMIN (Εμφανίζεται μόνο στον Admin μαζί με την Έκδοση) -->
+        <div id="admin-dashboard-section" class="max-w-md mx-auto bg-amber-950 text-white rounded-xl shadow-md overflow-hidden p-5 mb-6 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📊</span> Γενικά Στατιστικά Επιχείρησης
+                </h2>
+                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.1</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-center">
+                <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
+                    <p class="text-[10px] text-amber-300 uppercase">Συν. Κόστος Αγορών</p>
+                    <p id="dash-total-cost" class="text-base font-black mt-0.5">0.00€</p>
+                </div>
+                <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
+                    <p class="text-[10px] text-amber-300 uppercase">Συνολικά Έσοδα</p>
+                    <p id="dash-total-revenues" class="text-base font-black mt-0.5">0.00€</p>
+                </div>
+                <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
+                    <p class="text-[10px] text-amber-300 uppercase">Καθαρό Κέρδος</p>
+                    <p id="dash-net-profit" class="text-base font-black mt-0.5 text-green-400">0.00€</p>
+                </div>
+                <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
+                    <p class="text-[10px] text-amber-300 uppercase">Τεμάχια στο Στοκ</p>
+                    <p id="dash-total-stock" class="text-base font-black mt-0.5 text-amber-200">0 τμχ</p>
+                </div>
+            </div>
+        </div>
+
         <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
             <div class="flex justify-between items-center mb-2">
-                <h1 class="text-xl font-bold text-gray-800">📦 AuraNovaTD WMS v9</h1>
+                <!-- Αφαιρέθηκε η έκδοση από εδώ -->
+                <h1 class="text-xl font-bold text-gray-800">📦 AuraNovaTD WMS</h1>
                 <div class="flex gap-2">
-                    <!-- 🆕 ΚΟΥΜΠΙ ΓΙΑ ΑΜΕΣΕΣ ΔΙΟΡΘΩΣΕΙΣ -->
-                    <button onclick="window.toggleAdminPanel()" class="text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200">⚙️ Διορθώσεις</button>
+                    <button onclick="window.toggleAdminPanel()" id="admin-btn" class="text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200">⚙️ Διορθώσεις</button>
                     <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
                 </div>
             </div>
@@ -63,14 +92,25 @@
             </div>
         </div>
 
-        <!-- Ενότητα Ιστορικού Κινήσεων -->
-        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-3 flex justify-between items-center">
+        <!-- Ενότητα Ιστορικού Κινήσεων (Για όλους) -->
+        <div id="user-logs-section" class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
+            <h2 class="text-sm font-bold text-gray-800 mb-3 flex justify-between items-center">
                 <span>📜 Ιστορικό Κινήσεων (Live Log)</span>
-                <span class="text-xs font-normal text-gray-500">Τελευταίες 5 κινήσεις</span>
+                <span class="text-[10px] font-normal text-gray-500">Τελευταίες 5 κινήσεις</span>
             </h2>
             <div id="transactions-container" class="space-y-2 text-xs">
                 <p class="text-gray-500 italic">Φόρτωση ιστορικού...</p>
+            </div>
+        </div>
+
+        <!-- 🔒 ΚΡΥΦΟ ADMIN LOG (Εμφανίζεται μόνο στον Admin) -->
+        <div id="admin-logs-section" class="max-w-md mx-auto bg-amber-900 rounded-xl shadow-md overflow-hidden p-6 hidden">
+            <h2 class="text-sm font-bold text-amber-100 mb-3 flex justify-between items-center">
+                <span>🛠️ Ιστορικό Διαχειριστή (Admin Actions Log)</span>
+                <span class="text-[10px] font-normal text-amber-300">Μόνο για Admin μάτια</span>
+            </h2>
+            <div id="admin-transactions-container" class="space-y-2 text-xs">
+                <p class="text-amber-200 italic">Φόρτωση ιστορικού διαχειριστή...</p>
             </div>
         </div>
     </div>
@@ -109,12 +149,15 @@
         ];
 
         const MIN_SAFETY_STOCK = 3;
-        const MASTER_PIN = "1994"; // 🔒 Το PIN σου για τις διορθώσεις
+        
+        // 🔒 ΟΡΙΣΜΟΣ ΔΙΑΧΕΙΡΙΣΤΗ (Βάλε εδώ το email σου)
+        const ADMIN_EMAIL = "auranovatd@gmail.com"; 
         let isAdminAuthenticated = false;
 
         const docRef = doc(db, "wms", "inventory");
         let cachedData = null;
         let unsubscribeTransactions = null;
+        let unsubscribeAdminTransactions = null;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -126,7 +169,8 @@
                 document.getElementById("login-screen").classList.remove("hidden");
                 document.getElementById("main-app").classList.add("hidden");
                 if (unsubscribeTransactions) unsubscribeTransactions();
-                isAdminAuthenticated = false;
+                if (unsubscribeAdminTransactions) unsubscribeAdminTransactions();
+                hideAdminInterface();
             }
         });
 
@@ -147,23 +191,47 @@
             await signOut(auth);
         };
 
-        // 🆕 ⚙️ ΕΛΕΓΧΟΣ ΚΑΙ ΕΝΕΡΓΟΠΟΙΗΣΗ ADMIN PANEL
+        // Έλεγχος Admin Panel μέσω των στοιχείων Firebase Login (χωρίς PIN)
         window.toggleAdminPanel = function() {
+            const currentUser = auth.currentUser;
+            
             if (!isAdminAuthenticated) {
-                const inputPin = prompt("🔐 Εισάγετε το Master PIN για να ξεκλειδώσουν οι διορθώσεις:");
-                if (inputPin === MASTER_PIN) {
+                // Έλεγχος αν ο συνδεδεμένος χρήστης είναι ο Admin
+                if (currentUser && currentUser.email === ADMIN_EMAIL) {
                     isAdminAuthenticated = true;
-                    alert("🔓 Επιτυχής σύνδεση διαχειριστή! Τώρα μπορείς να τροποποιήσεις απευθείας τα πεδία των iPhone.");
+                    showAdminInterface();
                     renderInventory(cachedData);
-                } else if (inputPin !== null) {
-                    alert("❌ Λάθος PIN! Πρόσβαση ανεπιτυχής.");
+                } else {
+                    alert("❌ Πρόσβαση Απαγορεύεται: Αυτός ο λογαριασμός δεν έχει δικαιώματα διαχειριστή.");
                 }
             } else {
-                isAdminAuthenticated = false;
-                alert("🔒 Το Admin Panel κλειδώθηκε ξανά.");
+                hideAdminInterface();
                 renderInventory(cachedData);
             }
         };
+
+        function showAdminInterface() {
+            const adminBtn = document.getElementById("admin-btn");
+            const adminSection = document.getElementById("admin-logs-section");
+            const adminDashboard = document.getElementById("admin-dashboard-section");
+            
+            adminBtn.className = "text-xs bg-amber-600 text-white px-2 py-1.5 rounded-lg font-bold transition-colors border border-amber-700";
+            adminSection.classList.remove("hidden");
+            adminDashboard.classList.remove("hidden");
+            listenToAdminTransactions();
+        }
+
+        function hideAdminInterface() {
+            const adminBtn = document.getElementById("admin-btn");
+            const adminSection = document.getElementById("admin-logs-section");
+            const adminDashboard = document.getElementById("admin-dashboard-section");
+            
+            isAdminAuthenticated = false;
+            if (adminBtn) adminBtn.className = "text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200";
+            if (adminSection) adminSection.classList.add("hidden");
+            if (adminDashboard) adminDashboard.classList.add("hidden");
+            if (unsubscribeAdminTransactions) unsubscribeAdminTransactions();
+        }
 
         async function loadInventory() {
             try {
@@ -184,6 +252,32 @@
             }
         }
 
+        function calculateGlobalStats(data) {
+            let totalCost = 0;
+            let totalRevenues = 0;
+            let totalStock = 0;
+
+            models.forEach(model => {
+                const stats = data[model];
+                totalCost += stats.hasOwnProperty('total_cost') ? parseFloat(stats.total_cost) : 0;
+                totalRevenues += stats.hasOwnProperty('sold_profit') ? parseFloat(stats.sold_profit) : 0;
+                totalStock += stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
+            });
+
+            const netProfit = totalRevenues - totalCost;
+
+            document.getElementById("dash-total-cost").innerText = totalCost.toFixed(2) + "€";
+            document.getElementById("dash-total-revenues").innerText = totalRevenues.toFixed(2) + "€";
+            document.getElementById("dash-net-profit").innerText = netProfit.toFixed(2) + "€";
+            document.getElementById("dash-total-stock").innerText = totalStock + " τμχ";
+            
+            if (netProfit >= 0) {
+                document.getElementById("dash-net-profit").className = "text-base font-black mt-0.5 text-green-400";
+            } else {
+                document.getElementById("dash-net-profit").className = "text-base font-black mt-0.5 text-red-400";
+            }
+        }
+
         function renderInventory(data) {
             const container = document.getElementById("inventory-container");
             const alertsList = document.getElementById("alerts-list");
@@ -192,6 +286,8 @@
             container.innerHTML = "";
             alertsList.innerHTML = "";
             let hasAlerts = false;
+
+            calculateGlobalStats(data);
 
             models.forEach(model => {
                 const stats = data[model];
@@ -217,9 +313,8 @@
                 const card = document.createElement("div");
                 card.className = `border rounded-xl p-4 mb-4 shadow-sm transition-all ${cardBg}`;
                 
-                // 🆕 ΑΛΛΑΓΗ ΔΙΑΣΤΑΣΗΣ ΑΝ ΕΙΝΑΙ ADMIN Η ΟΧΙ
                 if (!isAdminAuthenticated) {
-                    // Κανονική Προβολή Χρήστη
+                    // 👤 ΠΡΟΒΟΛΗ ΧΡΗΣΤΗ
                     card.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
                             <h3 class="text-base font-bold text-gray-800">📱 ${model}</h3>
@@ -245,29 +340,42 @@
                         </div>
                     `;
                 } else {
-                    // 🆕 Πάνελ Άμεσης Διόρθωσης (Admin View)
+                    // ⚙️ ΠΛΗΡΕΣ ADMIN PANEL
                     card.innerHTML = `
-                        <div class="bg-amber-50/50 p-3 rounded-xl border border-amber-200">
-                            <h3 class="text-sm font-bold text-amber-900 mb-2">⚙️ Διόρθωση: ${model}</h3>
-                            <div class="space-y-2 text-xs">
-                                <div class="flex justify-between items-center">
-                                    <label class="w-1/2 font-semibold">Τρέχον Στοκ:</label>
-                                    <input type="number" id="edit_stock_${safeId}" value="${currentStock}" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                        <div class="bg-amber-50 border-2 border-amber-300 p-4 rounded-xl shadow-inner">
+                            <div class="flex justify-between items-center border-b border-amber-200 pb-2 mb-3">
+                                <h3 class="text-xs font-black text-amber-950 uppercase tracking-wider">🛠️ Διόρθωση Δεδομένων: ${model}</h3>
+                            </div>
+
+                            <div class="space-y-2 text-xs text-amber-900">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block font-bold mb-1">📦 Τρέχον Στοκ</label>
+                                        <input type="number" id="edit_stock_${safeId}" value="${currentStock}" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
                                     </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="w-1/2 font-semibold">Πουλημένα:</label>
-                                    <input type="number" id="edit_sold_${safeId}" value="${soldCount}" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                    <div>
+                                        <label class="block font-bold mb-1">📈 Πουλημένα</label>
+                                        <input type="number" id="edit_sold_${safeId}" value="${soldCount}" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                    </div>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="w-1/2 font-semibold">Συν. Κόστος Αγοράς (€):</label>
-                                    <input type="number" id="edit_cost_${safeId}" value="${totalCost}" step="0.01" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                    <div>
+                                        <label class="block font-bold mb-1">💸 Συνολικό Κόστος Αγορών (€)</label>
+                                        <input type="number" id="edit_cost_${safeId}" value="${totalCost}" step="0.01" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold mb-1">🏦 Συνολικά Έσοδα Πωλήσεων (€)</label>
+                                        <input type="number" id="edit_profit_${safeId}" value="${soldProfit}" step="0.01" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                    </div>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="w-1/2 font-semibold">Συν. Έσοδα Πωλήσεων (€):</label>
-                                    <input type="number" id="edit_profit_${safeId}" value="${soldProfit}" step="0.01" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                
+                                <div class="bg-amber-100 p-2 rounded text-[11px] font-medium border border-amber-200 mt-2 flex justify-between">
+                                    <span>📊 Υπολογισμένο Σύνολο (στοκ+sold): <b>${calculatedTotalStock}</b></span>
+                                    <span>💰 Καθαρό Κέρδος Μοντέλου: <b class="${netProfit >= 0 ? 'text-green-700' : 'text-red-700'}">${netProfit}€</b></span>
                                 </div>
-                                <button onclick="window.saveDirectEdit('${model}')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg mt-2 shadow-sm transition-colors">
-                                    💾 Αποθήκευση Αλλαγών
+
+                                <button onclick="window.saveDirectEdit('${model}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-2.5 rounded-lg mt-3 shadow transition-colors uppercase tracking-wide text-[11px]">
+                                    💾 Οριστική Αποθήκευση & Καταγραφή Log
                                 </button>
                             </div>
                         </div>
@@ -279,7 +387,6 @@
             if (hasAlerts) alertsContainer.classList.remove("hidden");
             else alertsContainer.classList.add("hidden");
 
-            // 🆕 ΣΥΝΑΡΤΗΣΗ ΑΠΟΘΗΚΕΥΣΗΣ ΔΙΟΡΘΩΣΕΩΝ
             window.saveDirectEdit = async (model) => {
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 
@@ -289,9 +396,18 @@
                 const newProfit = parseFloat(document.getElementById(`edit_profit_${safeId}`).value) || 0;
 
                 if(newStock < 0 || newSold < 0 || newCost < 0 || newProfit < 0) {
-                    alert("❌ Δεν επιτρέπονται αρνητικές τιμές στις διορθώσεις!");
+                    alert("❌ Απαγορεύονται οι αρνητικές τιμές!");
                     return;
                 }
+
+                const oldData = cachedData[model];
+                let changesArr = [];
+                if (parseInt(oldData.stock) !== newStock) changesArr.push(`Στοκ: ${oldData.stock} ➔ ${newStock}`);
+                if (parseInt(oldData.sold) !== newSold) changesArr.push(`Πουλήθηκαν: ${oldData.sold} ➔ ${newSold}`);
+                if (parseFloat(oldData.total_cost) !== newCost) changesArr.push(`Κόστος: ${oldData.total_cost}€ ➔ ${newCost}€`);
+                if (parseFloat(oldData.sold_profit) !== newProfit) changesArr.push(`Έσοδα: ${oldData.sold_profit}€ ➔ ${newProfit}€`);
+
+                const changesText = changesArr.length > 0 ? changesArr.join(" | ") : "Ξαναπατήθηκε αποθήκευση χωρίς αλλαγές";
 
                 cachedData[model] = {
                     stock: newStock,
@@ -302,10 +418,21 @@
 
                 try {
                     await setDoc(docRef, cachedData);
-                    alert(`✅ Οι αλλαγές για το ${model} αποθηκεύτηκαν επιτυχώς!`);
+
+                    const now = new Date();
+                    const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    await addDoc(collection(db, "admin_logs"), {
+                        timestamp: now,
+                        timeLabel: timeString,
+                        model: model,
+                        details: changesText
+                    });
+
+                    alert(`✅ Επιτυχής διόρθωση και καταγραφή log για το ${model}!`);
                     renderInventory(cachedData);
                 } catch (error) {
-                    alert("❌ Σφάλμα κατά την αποθήκευση στη βάση.");
+                    alert("❌ Σφάλμα κατά την αποθήκευση.");
                 }
             };
 
@@ -329,33 +456,33 @@
                 }
 
                 if (type !== 'donation' && parsedPrice < 0) {
-                    alert("❌ Σφάλμα Ασφαλείας: Δεν επιτρέπονται αρνητικές τιμές στο ποσό!");
+                    alert("❌ Σφάλμα: Δεν επιτρέπονται αρνητικές τιμές!");
                     return;
                 }
 
                 if (type === 'sale' && parsedPrice === 0) {
-                    alert("❌ Σφάλμα Ασφαλείας: Η τιμή πώλησης ΠΡΕΠΕΙ να είναι μεγαλύτερη από 0€!\n\nΑν δίνεις το προϊόν δωρεάν, πάτα το μωβ κουμπί 'Δωρεά'.");
+                    alert("❌ Σφάλμα: Η τιμή πώλησης πρέπει να είναι μεγαλύτερη από 0€!");
                     return;
                 }
 
                 if (type !== 'donation' && priceRaw.includes('.')) {
                     const decimals = priceRaw.split('.')[1];
                     if (decimals && decimals.length > 2) {
-                        alert("❌ Σφάλμα: Το ποσό δεν μπορεί να έχει πάνω από 2 δεκαδικά ψηφία!");
+                        alert("❌ Σφάλμα: Μέχρι 2 δεκαδικά ψηφία!");
                         return;
                     }
                 }
 
                 const price = type === 'donation' ? 0 : parsedPrice;
-
                 let logType = "";
+
                 if (type === 'restock') {
                     cachedData[model].stock = parseInt(cachedData[model].stock) + qty;
                     cachedData[model].total_cost = parseFloat(cachedData[model].total_cost) + price;
                     logType = "🔄 Restock";
                 } else if (type === 'sale') {
                     if (parseInt(cachedData[model].stock) < qty) {
-                        alert("❌ Δεν υπάρχει αρκετό στοκ στην αποθήκη!");
+                        alert("❌ Δεν υπάρχει αρκετό στοκ!");
                         return;
                     }
                     cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
@@ -364,7 +491,7 @@
                     logType = "💰 Πώληση";
                 } else if (type === 'donation') {
                     if (parseInt(cachedData[model].stock) < qty) {
-                        alert("❌ Δεν υπάρχει αρκετό στοκ για δωρεά!");
+                        alert("❌ Δεν υπάρχει αρκετό στοκ!");
                         return;
                     }
                     cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
@@ -397,12 +524,10 @@
             unsubscribeTransactions = onSnapshot(q, (snapshot) => {
                 const txContainer = document.getElementById("transactions-container");
                 txContainer.innerHTML = "";
-                
                 if (snapshot.empty) {
                     txContainer.innerHTML = `<p class="text-gray-400 italic">Δεν υπάρχουν ακόμα καταγεγραμμένες κινήσεις.</p>`;
                     return;
                 }
-
                 snapshot.forEach((doc) => {
                     const tx = doc.data();
                     let colorClass = "text-blue-600 bg-blue-50";
@@ -419,6 +544,35 @@
                         <span class="font-semibold text-gray-700">${tx.price.toFixed(2)}€</span>
                     `;
                     txContainer.appendChild(logRow);
+                });
+            });
+        }
+
+        function listenToAdminTransactions() {
+            const q = query(collection(db, "admin_logs"), orderBy("timestamp", "desc"), limit(10));
+            unsubscribeAdminTransactions = onSnapshot(q, (snapshot) => {
+                const adminTxContainer = document.getElementById("admin-transactions-container");
+                adminTxContainer.innerHTML = "";
+                
+                if (snapshot.empty) {
+                    adminTxContainer.innerHTML = `<p class="text-amber-300 italic">Δεν έχουν καταγραφεί ακόμα χειροκίνητες διορθώσεις.</p>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const log = doc.data();
+                    const logRow = document.createElement("div");
+                    logRow.className = "p-2 rounded bg-amber-950/60 border border-amber-700 text-amber-100 mb-1";
+                    logRow.innerHTML = `
+                        <div class="flex justify-between font-bold text-[11px] text-amber-400">
+                            <span>📱 ${log.model}</span>
+                            <span>⏱️ ${log.timeLabel}</span>
+                        </div>
+                        <div class="text-[11px] mt-0.5 text-amber-100 font-medium p-1">
+                            🔧 Διόρθωση ➔ ${log.details}
+                        </div>
+                    `;
+                    adminTxContainer.appendChild(logRow);
                 });
             });
         }
