@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v5</title>
+    <title>AuraNovaTD WMS Ultra Secured v6</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
@@ -222,31 +222,37 @@
                 
                 const qty = parseInt(qtyInput.value) || 0;
                 const priceRaw = priceInput.value.trim();
-                const price = type === 'donation' ? 0 : parseFloat(priceRaw);
-
+                
                 // 1. Έλεγχος για τα Τεμάχια
                 if (qty <= 0) {
                     alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
                     return;
                 }
 
-                // 2. Έλεγχος αν το πεδίο είναι τελείως κενό (Μόνο για Restock και Πώληση)
-                if (type !== 'donation' && priceRaw === "") {
-                    alert("❌ Σφάλμα: Το πεδίο του ποσού δεν μπορεί να μείνει άδειο!");
-                    return;
+                // 2. Απόλυτος έλεγχος για την Πώληση (Απαγόρευση για κενό, 0, ή αρνητικό)
+                if (type === 'sale') {
+                    const parsedPrice = parseFloat(priceRaw);
+                    if (priceRaw === "" || isNaN(parsedPrice) || parsedPrice <= 0) {
+                        alert("❌ Σφάλμα Ασφαλείας: Η τιμή πώλησης πρέπει να είναι υποχρεωτικά μεγαλύτερη από 0€! Για δωρεάν διάθεση χρησιμοποιήστε το μωβ κουμπί 'Δωρεά'.");
+                        return;
+                    }
                 }
 
-                // 3. ΑΥΣΤΗΡΟ ΚΛΕΙΔΩΜΑ ΠΩΛΗΣΗΣ ΜΕ 0€
-                if (type === 'sale' && price <= 0) {
-                    alert("❌ Σφάλμα Ασφαλείας: Η τιμή πώλησης πρέπει να είναι μεγαλύτερη από 0€! Για δωρεάν διάθεση χρησιμοποιήστε το μωβ κουμπί 'Δωρεά'.");
-                    return;
+                // 3. Έλεγχος για το Restock (Πρέπει να έχει τιμή, αλλά επιτρέπεται το 0 για δωρεάν παραλαβές)
+                if (type === 'restock') {
+                    const parsedPrice = parseFloat(priceRaw);
+                    if (priceRaw === "" || isNaN(parsedPrice)) {
+                        alert("❌ Σφάλμα: Πρέπει να βάλετε ένα ποσό αγοράς (έστω και 0).");
+                        return;
+                    }
+                    if (parsedPrice < 0) {
+                        alert("❌ Σφάλμα: Το κόστος αγοράς δεν μπορεί να είναι αρνητικό!");
+                        return;
+                    }
                 }
 
-                // 4. Έλεγχος για αρνητικές τιμές στο Restock
-                if (type === 'restock' && price < 0) {
-                    alert("❌ Σφάλμα: Το κόστος αγοράς δεν μπορεί να είναι αρνητικό!");
-                    return;
-                }
+                // Μετατροπή της τελικής τιμής για τη βάση δεδομένων
+                const price = type === 'donation' ? 0 : parseFloat(priceRaw);
 
                 if (!cachedData[model].hasOwnProperty('stock')) cachedData[model].stock = 0;
                 if (!cachedData[model].hasOwnProperty('sold')) cachedData[model].sold = 0;
