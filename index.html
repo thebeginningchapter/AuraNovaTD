@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v4</title>
+    <title>AuraNovaTD WMS Ultra Secured v5</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
@@ -221,18 +221,30 @@
                 const priceInput = document.getElementById(`price_${safeId}`);
                 
                 const qty = parseInt(qtyInput.value) || 0;
-                // Αν είναι δωρεά, το price παραμένει 0 αυτόματα χωρίς να ελέγχει το input
-                const price = type === 'donation' ? 0 : parseFloat(priceInput.value);
+                const priceRaw = priceInput.value.trim();
+                const price = type === 'donation' ? 0 : parseFloat(priceRaw);
 
-                // 1. Έλεγχος για τα Τεμάχια (Υποχρεωτικό για όλα)
+                // 1. Έλεγχος για τα Τεμάχια
                 if (qty <= 0) {
                     alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
                     return;
                 }
 
-                // 2. ΣΥΣΤΗΜΙΚΟ ΚΛΕΙΔΩΜΑ: Έλεγχος αν το ποσό είναι κενό (NaN) ή αρνητικό (Μόνο για Restock και Πώληση)
-                if (type !== 'donation' && (isNaN(price) || priceInput.value.trim() === "")) {
-                    alert("❌ Σφάλμα: Πρέπει να πληκτρολογήσεις ένα ποσό (έστω και 0)! Το πεδίο δεν μπορεί να μείνει άδειο.");
+                // 2. Έλεγχος αν το πεδίο είναι τελείως κενό (Μόνο για Restock και Πώληση)
+                if (type !== 'donation' && priceRaw === "") {
+                    alert("❌ Σφάλμα: Το πεδίο του ποσού δεν μπορεί να μείνει άδειο!");
+                    return;
+                }
+
+                // 3. ΑΥΣΤΗΡΟ ΚΛΕΙΔΩΜΑ ΠΩΛΗΣΗΣ ΜΕ 0€
+                if (type === 'sale' && price <= 0) {
+                    alert("❌ Σφάλμα Ασφαλείας: Η τιμή πώλησης πρέπει να είναι μεγαλύτερη από 0€! Για δωρεάν διάθεση χρησιμοποιήστε το μωβ κουμπί 'Δωρεά'.");
+                    return;
+                }
+
+                // 4. Έλεγχος για αρνητικές τιμές στο Restock
+                if (type === 'restock' && price < 0) {
+                    alert("❌ Σφάλμα: Το κόστος αγοράς δεν μπορεί να είναι αρνητικό!");
                     return;
                 }
 
@@ -260,7 +272,6 @@
                         alert("❌ Δεν υπάρχει αρκετό στοκ για δωρεά!");
                         return;
                     }
-                    // Στη δωρεά μειώνεται το στοκ και αυξάνονται τα δοθέντα/πουλημένα, αλλά με 0€ κέρδος
                     cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
                     cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
                     logType = "🎁 Δωρεά";
