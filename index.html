@@ -3,29 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS ERP Professional v10.3</title>
+    <title>AuraNovaTD WMS ERP Professional v10.4</title>
+    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+        // Άμεση εφαρμογή του theme πριν το render για αποφυγή φλασαρίσματος λευκού χρώματος
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-100 font-sans p-4">
+<body class="bg-gray-100 dark:bg-gray-900 font-sans p-4 text-gray-800 dark:text-gray-100 transition-colors duration-200">
 
+    <!-- 🔒 ΟΘΟΝΗ LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-gray-900 flex flex-col justify-center items-center z-50 px-4">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-sm border border-transparent dark:border-gray-700">
             <div class="text-center mb-4">
                 <span class="text-4xl">🔐</span>
-                <h2 class="text-xl font-bold text-gray-800 mt-2 mb-1">AuraNovaTD WMS</h2>
-                <p class="text-xs text-gray-500">Σύνδεση στο κλειδωμένο σύστημα</p>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white mt-2 mb-1">AuraNovaTD WMS</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Σύνδεση στο κλειδωμένο σύστημα</p>
             </div>
             
             <div class="space-y-3">
                 <div>
-                    <label class="text-xs font-semibold text-gray-600">Email</label>
+                    <label class="text-xs font-semibold text-gray-600 dark:text-gray-400">Email</label>
                     <input type="email" id="email-input" placeholder="name@example.com" 
-                           class="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-sm mt-1">
+                           class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none text-sm mt-1">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-gray-600">Password</label>
+                    <label class="text-xs font-semibold text-gray-600 dark:text-gray-400">Password</label>
                     <input type="password" id="password-input" placeholder="••••••••" 
-                           class="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-sm mt-1">
+                           class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none text-sm mt-1">
                 </div>
             </div>
             
@@ -36,14 +44,16 @@
         </div>
     </div>
 
+    <!-- 📦 ΚΥΡΙΑ ΕΦΑΡΜΟΓΗ -->
     <div id="main-app" class="hidden">
         
-        <div id="admin-dashboard-section" class="max-w-md mx-auto bg-amber-950 text-white rounded-xl shadow-md overflow-hidden p-5 mb-6 hidden">
+        <!-- 📊 ΓΕΝΙΚΟ DASHBOARD ADMIN -->
+        <div id="admin-dashboard-section" class="max-w-md mx-auto bg-amber-950 text-white rounded-xl shadow-md overflow-hidden p-5 mb-4 hidden">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>📊</span> Γενικά Στατιστικά Επιχείρησης
                 </h2>
-                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.3</span>
+                <span class="text-[10px] bg-amber-800 text-amber-200 font-mono px-2 py-0.5 rounded-md font-bold">v10.4</span>
             </div>
             <div class="grid grid-cols-2 gap-3 text-center">
                 <div class="bg-amber-900/50 p-2.5 rounded-lg border border-amber-800">
@@ -65,36 +75,52 @@
             </div>
         </div>
 
-        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
+        <!-- ⚙️ PANEL ΠΡΟΣΘΗΚΗΣ ΝΕΩΝ ΠΡΟΪΟΝΤΩΝ (Μόνο για Admin) -->
+        <div id="admin-add-product-section" class="max-w-md mx-auto bg-white dark:bg-gray-800 border-2 border-dashed border-amber-500 dark:border-amber-600 rounded-xl p-4 mb-4 hidden shadow-sm">
+            <h3 class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">✨ Προσθήκη Νέου Κωδικού / Προϊόντος</h3>
+            <div class="flex gap-2">
+                <input type="text" id="new-product-name" placeholder="π.χ. iPhone 17 Pro Max Privacy" 
+                       class="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-amber-500">
+                <button onclick="window.addNewProduct()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors whitespace-nowrap">➕ Προσθήκη</button>
+            </div>
+        </div>
+
+        <!-- ΚΥΡΙΟΣ ΠΙΝΑΚΑΣ ΑΠΟΘΗΚΗΣ -->
+        <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-2">
-                <h1 class="text-xl font-bold text-gray-800">📦 AuraNovaTD WMS</h1>
-                <div class="flex gap-2">
-                    <button onclick="window.toggleAdminPanel()" id="admin-btn" class="text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200">⚙️ Admin Panel</button>
+                <h1 class="text-xl font-bold text-gray-800 dark:text-white">📦 AuraNovaTD WMS</h1>
+                <div class="flex gap-1.5 items-center">
+                    <button onclick="window.toggleTheme()" id="theme-btn" class="text-xs p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">🌙</button>
+                    <button onclick="window.toggleAdminPanel()" id="admin-btn" class="text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200">⚙️ Διορθώσεις</button>
                     <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
                 </div>
             </div>
             <p id="user-welcome-msg" class="text-xs text-blue-500 font-semibold mb-4">Σύνδεση ως: ...</p>
             
-            <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+            <!-- Ειδοποιήσεις για Χαμηλό Στοκ -->
+            <div id="alerts-container" class="hidden mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-lg text-xs text-red-700 dark:text-red-300">
                 <span class="font-bold">⚠️ ΠΡΟΣΟΧΗ - ΧΑΜΗΛΟ ΣΤΟΚ:</span>
                 <ul id="alerts-list" class="list-disc list-inside mt-1"></ul>
             </div>
 
-            <div id="inventory-container" class="space-y-6">
-                <p class="text-center text-gray-600">Φόρτωση εξελιγμένης αποθήκης...</p>
+            <!-- Κύρια Λίστα Αποθήκης -->
+            <div id="inventory-container" class="space-y-4">
+                <p class="text-center text-gray-600 dark:text-gray-400 text-xs">Φόρτωση δυναμικής αποθήκης...</p>
             </div>
         </div>
 
-        <div id="user-logs-section" class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
-            <h2 class="text-sm font-bold text-gray-800 mb-3 flex justify-between items-center">
+        <!-- Ενότητα Ιστορικού Κινήσεων -->
+        <div id="user-logs-section" class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6 mb-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-sm font-bold text-gray-800 dark:text-white mb-3 flex justify-between items-center">
                 <span>📜 Ιστορικό Κινήσεων (ERP Live Log)</span>
-                <span class="text-[10px] font-normal text-gray-500">Τελευταίες 5 κινήσεις</span>
+                <span class="text-[10px] font-normal text-gray-500 dark:text-gray-400">Τελευταίες 5 κινήσεις</span>
             </h2>
             <div id="transactions-container" class="space-y-2 text-xs">
                 <p class="text-gray-500 italic">Φόρτωση ιστορικού...</p>
             </div>
         </div>
 
+        <!-- 🔒 ΚΡΥΦΟ ADMIN LOG -->
         <div id="admin-logs-section" class="max-w-md mx-auto bg-amber-900 rounded-xl shadow-md overflow-hidden p-6 hidden">
             <h2 class="text-sm font-bold text-amber-100 mb-3 flex justify-between items-center">
                 <span>🛠️ Ιστορικό Διαχειριστή (Admin Actions Log)</span>
@@ -106,6 +132,7 @@
         </div>
     </div>
 
+    <!-- Firebase SDK Σύνδεση -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -126,28 +153,28 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const models = [
-            "iPhone 13 / 13 Pro / 14 / 16e / 17e",
-            "iPhone 15 Pro",
-            "iPhone 15 Pro Max",
-            "iPhone 15 / 16",
-            "iPhone 16 Pro",
-            "iPhone 16 Pro Max",
-            "iPhone 17",
-            "iPhone 17 Pro",
-            "iPhone 17 Pro Max"
-        ];
-
+        // 📈 ΠΛΕΟΝ ΤΑ ΜΟΝΤΕΛΑ ΦΟΡΤΩΝΟΝΤΑΙ ΔΥΝΑΜΙΚΑ ΑΠΟ ΤΗ ΒΑΣΗ
+        let models = [];
         const MIN_SAFETY_STOCK = 3;
-        
-        // 🔒 ΟΡΙΣΜΟΣ ΔΙΑΧΕΙΡΙΣΤΗ
         const ADMIN_EMAIL = "dtsagkadakis@gmail.com"; 
+        
         let isAdminAuthenticated = false;
-
         const docRef = doc(db, "wms", "inventory");
         let cachedData = null;
         let unsubscribeTransactions = null;
         let unsubscribeAdminTransactions = null;
+
+        // --- THEME TOGGLE LOGIC ---
+        window.toggleTheme = function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById("theme-btn").innerText = isDark ? "☀️" : "🌙";
+        };
+        
+        // Αρχικοποίηση εικονιδίου κουμπιού theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.getElementById("theme-btn").innerText = "☀️";
+        }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -184,14 +211,13 @@
 
         window.toggleAdminPanel = function() {
             const currentUser = auth.currentUser;
-            
             if (!isAdminAuthenticated) {
                 if (currentUser && currentUser.email === ADMIN_EMAIL) {
                     isAdminAuthenticated = true;
                     showAdminInterface();
                     renderInventory(cachedData);
                 } else {
-                    alert("❌ Πρόσβαση Απαγορεύεται: Αυτός ο λογαριασμός δεν έχει δικαιώματα διαχειριστή.");
+                    alert("❌ Πρόσβαση Απαγορεύεται: Δεν έχετε δικαιώματα διαχειριστή.");
                 }
             } else {
                 hideAdminInterface();
@@ -200,27 +226,44 @@
         };
 
         function showAdminInterface() {
-            const adminBtn = document.getElementById("admin-btn");
-            const adminSection = document.getElementById("admin-logs-section");
-            const adminDashboard = document.getElementById("admin-dashboard-section");
-            
-            adminBtn.className = "text-xs bg-amber-600 text-white px-2 py-1.5 rounded-lg font-bold transition-colors border border-amber-700";
-            adminSection.classList.remove("hidden");
-            adminDashboard.classList.remove("hidden");
+            document.getElementById("admin-btn").className = "text-xs bg-amber-600 text-white px-2 py-1.5 rounded-lg font-bold transition-colors border border-amber-700";
+            document.getElementById("admin-logs-section").classList.remove("hidden");
+            document.getElementById("admin-dashboard-section").classList.remove("hidden");
+            document.getElementById("admin-add-product-section").classList.remove("hidden");
             listenToAdminTransactions();
         }
 
         function hideAdminInterface() {
-            const adminBtn = document.getElementById("admin-btn");
-            const adminSection = document.getElementById("admin-logs-section");
-            const adminDashboard = document.getElementById("admin-dashboard-section");
-            
             isAdminAuthenticated = false;
+            const adminBtn = document.getElementById("admin-btn");
             if (adminBtn) adminBtn.className = "text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200";
-            if (adminSection) adminSection.classList.add("hidden");
-            if (adminDashboard) adminDashboard.classList.add("hidden");
+            document.getElementById("admin-logs-section").classList.add("hidden");
+            document.getElementById("admin-dashboard-section").classList.add("hidden");
+            document.getElementById("admin-add-product-section").classList.add("hidden");
             if (unsubscribeAdminTransactions) unsubscribeAdminTransactions();
         }
+
+        // ✨ ΛΕΙΤΟΥΡΓΙΑ ΠΡΟΣΘΗΚΗΣ ΝΕΟΥ ΠΡΟΪΟΝΤΟΣ
+        window.addNewProduct = async function() {
+            const input = document.getElementById("new-product-name");
+            const name = input.value.trim();
+            
+            if (!name) { alert("❌ Πληκτρολογήστε ένα όνομα για το προϊόν!"); return; }
+            if (cachedData && cachedData[name]) { alert("❌ Αυτό το προϊόν υπάρχει ήδη στην αποθήκη!"); return; }
+
+            // Αρχικοποίηση δομής ERP για το νέο προϊόν
+            cachedData[name] = { stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
+            models = Object.keys(cachedData).sort();
+
+            try {
+                await setDoc(docRef, cachedData);
+                input.value = "";
+                alert(`✅ Το προϊόν "${name}" προστέθηκε με επιτυχία!`);
+                renderInventory(cachedData);
+            } catch (error) {
+                alert("❌ Σφάλμα δικτύου κατά την προσθήκη.");
+            }
+        };
 
         async function loadInventory() {
             try {
@@ -229,15 +272,12 @@
                 if (docSnap.exists()) {
                     data = docSnap.data();
                 }
-                models.forEach(model => {
-                    if (!data[model]) {
-                        data[model] = { stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
-                    }
-                });
+                // Διαβάζουμε δυναμικά τα κλειδιά από τη Firestore και τα ταξινομούμε αλφαβητικά
+                models = Object.keys(data).sort();
                 cachedData = data;
                 renderInventory(data);
             } catch (error) {
-                console.error("Σφάλμα:", error);
+                console.error("Σφάλμα φόρτωσης αποθήκης:", error);
             }
         }
 
@@ -260,11 +300,9 @@
             document.getElementById("dash-net-profit").innerText = netProfit.toFixed(2) + "€";
             document.getElementById("dash-total-stock").innerText = totalStock + " τμχ";
             
-            if (netProfit >= 0) {
-                document.getElementById("dash-net-profit").className = "text-base font-black mt-0.5 text-green-400";
-            } else {
-                document.getElementById("dash-net-profit").className = "text-base font-black mt-0.5 text-red-400";
-            }
+            document.getElementById("dash-net-profit").className = netProfit >= 0 
+                ? "text-base font-black mt-0.5 text-green-400" 
+                : "text-base font-black mt-0.5 text-red-400";
         }
 
         function renderInventory(data) {
@@ -278,6 +316,13 @@
 
             calculateGlobalStats(data);
 
+            // Έλεγχος αν η αποθήκη είναι τελείως άδεια
+            if (models.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 italic text-xs p-4">Η αποθήκη είναι άδεια. ${isAdminAuthenticated ? 'Προσθέστε το πρώτο προϊόν παραπάνω!' : 'Συνδεθείτε ως Admin για προσθήκη προϊόντων.'}</p>`;
+                alertsContainer.classList.add("hidden");
+                return;
+            }
+
             models.forEach(model => {
                 const stats = data[model];
                 const currentStock = stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
@@ -290,7 +335,9 @@
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 
                 const isLowStock = currentStock > 0 && currentStock < MIN_SAFETY_STOCK;
-                const cardBg = isLowStock ? "bg-red-50/60 border-red-200" : "bg-white";
+                const cardBg = isLowStock 
+                    ? "bg-red-50/60 dark:bg-red-950/20 border-red-200 dark:border-red-900/60" 
+                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700";
 
                 if (isLowStock) {
                     hasAlerts = true;
@@ -300,68 +347,68 @@
                 }
 
                 const card = document.createElement("div");
-                card.className = `border rounded-xl p-4 mb-4 shadow-sm transition-all ${cardBg}`;
+                card.className = `border rounded-xl p-4 shadow-sm transition-all ${cardBg}`;
                 
                 if (!isAdminAuthenticated) {
-                    // 👤 ΠΡΟΒΟΛΗ ΧΡΗΣΤΗ
+                    // 👤 ΠΡΟΒΟΛΗ ΧΡΗΣΤΗ (DARK MODE READY)
                     card.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-base font-bold text-gray-800">📱 ${model}</h3>
+                            <h3 class="text-base font-bold text-gray-800 dark:text-white">📱 ${model}</h3>
                             ${isLowStock ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">REORDER</span>' : ''}
                         </div>
-                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-3">
-                            <div class="bg-gray-100/80 p-2 rounded"><b>Στοκ:</b> <span class="${isLowStock ? 'text-red-600 font-bold' : ''}">${currentStock}</span></div>
-                            <div class="bg-gray-100/80 p-2 rounded"><b>Πουλήθηκαν:</b> ${soldCount}</div>
-                            <div class="bg-blue-50 p-2 rounded text-blue-700 font-medium"><b>Συνολικά:</b> ${calculatedTotalStock}</div>
-                            <div class="bg-gray-100/80 p-2 rounded"><b>Κέρδος:</b> <span class="${netProfit >= 0 ? 'text-green-600' : 'text-red-600'} font-medium">${netProfit}€</span></div>
+                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-300 mb-3">
+                            <div class="bg-gray-100/80 dark:bg-gray-700/50 p-2 rounded"><b>Στοκ:</b> <span class="${isLowStock ? 'text-red-600 dark:text-red-400 font-bold' : ''}">${currentStock}</span></div>
+                            <div class="bg-gray-100/80 dark:bg-gray-700/50 p-2 rounded"><b>Πουλήθηκαν:</b> ${soldCount}</div>
+                            <div class="bg-blue-50 dark:bg-blue-950/40 p-2 rounded text-blue-700 dark:text-blue-300 font-medium"><b>Συνολικά:</b> ${calculatedTotalStock}</div>
+                            <div class="bg-gray-100/80 dark:bg-gray-700/50 p-2 rounded"><b>Κέρδος:</b> <span class="${netProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} font-medium">${netProfit}€</span></div>
                         </div>
                         
-                        <div class="space-y-2 bg-gray-100/50 p-3 rounded-lg">
+                        <div class="space-y-2 bg-gray-100/50 dark:bg-gray-700/30 p-3 rounded-lg">
                             <div class="flex gap-1.5">
                                 <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Αγορά</button>
                                 <button onclick="window.submitAction('${model}', 'sale')" class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
                                 <button onclick="window.submitAction('${model}', 'donation')" class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
                             </div>
                             <div class="flex gap-2 text-xs">
-                                <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
-                                <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.01" min="0">
+                                <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none" min="1">
+                                <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none" step="0.01" min="0">
                             </div>
-                            <input type="text" id="ref_${safeId}" placeholder="Όνομα Πελάτη / Προμηθευτή..." class="w-full p-1.5 border rounded-md bg-white text-xs focus:border-blue-500 focus:outline-none">
+                            <input type="text" id="ref_${safeId}" placeholder="Όνομα Πελάτη / Προμηθευτή..." class="w-full p-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs focus:border-blue-500 focus:outline-none">
                         </div>
                     `;
                 } else {
                     // ⚙️ ΠΛΗΡΕΣ ADMIN PANEL
                     card.innerHTML = `
-                        <div class="bg-amber-50 border-2 border-amber-300 p-4 rounded-xl shadow-inner">
-                            <div class="flex justify-between items-center border-b border-amber-200 pb-2 mb-3">
-                                <h3 class="text-xs font-black text-amber-950 uppercase tracking-wider">🛠️ Διόρθωση Δεδομένων: ${model}</h3>
+                        <div class="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-900 p-4 rounded-xl shadow-inner">
+                            <div class="flex justify-between items-center border-b border-amber-200 dark:border-amber-900 pb-2 mb-3">
+                                <h3 class="text-xs font-black text-amber-950 dark:text-amber-300 uppercase tracking-wider">🛠️ Διόρθωση Δεδομένων: ${model}</h3>
                             </div>
 
-                            <div class="space-y-2 text-xs text-amber-900">
+                            <div class="space-y-2 text-xs text-amber-900 dark:text-amber-200">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block font-bold mb-1">📦 Τρέχον Στοκ</label>
-                                        <input type="number" id="edit_stock_${safeId}" value="${currentStock}" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                        <input type="number" id="edit_stock_${safeId}" value="${currentStock}" class="w-full p-2 border border-amber-300 dark:border-amber-700 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center font-bold">
                                     </div>
                                     <div>
                                         <label class="block font-bold mb-1">📈 Πουλημένα</label>
-                                        <input type="number" id="edit_sold_${safeId}" value="${soldCount}" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                        <input type="number" id="edit_sold_${safeId}" value="${soldCount}" class="w-full p-2 border border-amber-300 dark:border-amber-700 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center font-bold">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2 mt-2">
                                     <div>
-                                        <label class="block font-bold mb-1">💸 Συνολικό Κόστος Αγορών (€)</label>
-                                        <input type="number" id="edit_cost_${safeId}" value="${totalCost}" step="0.01" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                        <label class="block font-bold mb-1">💸 Κόστος Αγορών (€)</label>
+                                        <input type="number" id="edit_cost_${safeId}" value="${totalCost}" step="0.01" class="w-full p-2 border border-amber-300 dark:border-amber-700 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center font-bold">
                                     </div>
                                     <div>
-                                        <label class="block font-bold mb-1">🏦 Συνολικά Έσοδα Πωλήσεων (€)</label>
-                                        <input type="number" id="edit_profit_${safeId}" value="${soldProfit}" step="0.01" class="w-full p-2 border border-amber-300 rounded bg-white text-center font-bold">
+                                        <label class="block font-bold mb-1">🏦 Έσοδα Πωλήσεων (€)</label>
+                                        <input type="number" id="edit_profit_${safeId}" value="${soldProfit}" step="0.01" class="w-full p-2 border border-amber-300 dark:border-amber-700 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center font-bold">
                                     </div>
                                 </div>
                                 
-                                <div class="bg-amber-100 p-2 rounded text-[11px] font-medium border border-amber-200 mt-2 flex justify-between">
-                                    <span>📊 Υπολογισμένο Σύνολο (στοκ+sold): <b>${calculatedTotalStock}</b></span>
-                                    <span>💰 Καθαρό Κέρδος Μοντέλου: <b class="${netProfit >= 0 ? 'text-green-700' : 'text-red-700'}">${netProfit}€</b></span>
+                                <div class="bg-amber-100 dark:bg-amber-900/40 p-2 rounded text-[11px] font-medium border border-amber-200 dark:border-amber-800 mt-2 flex justify-between">
+                                    <span>📊 Σύνολο: <b>${calculatedTotalStock}</b></span>
+                                    <span>💰 Κέρδος: <b class="${netProfit >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}">${netProfit}€</b></span>
                                 </div>
 
                                 <button onclick="window.saveDirectEdit('${model}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-2.5 rounded-lg mt-3 shadow transition-colors uppercase tracking-wide text-[11px]">
@@ -400,28 +447,18 @@
 
                 const changesText = changesArr.length > 0 ? changesArr.join(" | ") : "Ξαναπατήθηκε αποθήκευση χωρίς αλλαγές";
 
-                cachedData[model] = {
-                    stock: newStock,
-                    sold: newSold,
-                    total_cost: newCost,
-                    sold_profit: newProfit
-                };
+                cachedData[model] = { stock: newStock, sold: newSold, total_cost: newCost, sold_profit: newProfit };
 
                 try {
                     await setDoc(docRef, cachedData);
-
                     const now = new Date();
                     const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
                     
                     await addDoc(collection(db, "admin_logs"), {
-                        timestamp: now,
-                        timeLabel: timeString,
-                        model: model,
-                        details: changesText,
-                        adminUser: currentUser ? currentUser.email : "Άγνωστος Admin"
+                        timestamp: now, timeLabel: timeString, model: model, details: changesText, adminUser: currentUser ? currentUser.email : "Άγνωστος Admin"
                     });
 
-                    alert(`✅ Επιτυχής διόρθωση και καταγραφή log για το ${model}!`);
+                    alert(`✅ Επιτυχής διόρθωση για το ${model}!`);
                     renderInventory(cachedData);
                 } catch (error) {
                     alert("❌ Σφάλμα κατά την αποθήκευση.");
@@ -432,40 +469,22 @@
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 const qtyInput = document.getElementById(`qty_${safeId}`);
                 const priceInput = document.getElementById(`price_${safeId}`);
-                const refInput = document.getElementById(`ref_${safeId}`); // Λήψη του input στοιχείων
+                const refInput = document.getElementById(`ref_${safeId}`);
                 const currentUser = auth.currentUser;
                 
                 const qty = parseInt(qtyInput.value) || 0;
                 const priceRaw = priceInput.value.trim();
                 const parsedPrice = parseFloat(priceRaw);
-                const referenceValue = refInput.value.trim() || "Ιδιωτική Κίνηση"; // Default αν μείνει κενό
+                const referenceValue = refInput.value.trim() || "Ιδιωτική Κίνηση";
                 
-                if (qty <= 0) {
-                    alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
-                    return;
-                }
-
-                if (type !== 'donation' && (priceRaw === "" || isNaN(parsedPrice))) {
-                    alert("❌ Σφάλμα: Το πεδίο του ποσού δεν μπορεί να είναι άδειο!");
-                    return;
-                }
-
-                if (type !== 'donation' && parsedPrice < 0) {
-                    alert("❌ Σφάλμα: Δεν επιτρέπονται αρνητικές τιμές!");
-                    return;
-                }
-
-                if (type === 'sale' && parsedPrice === 0) {
-                    alert("❌ Σφάλμα: Η τιμή πώλησης πρέπει να είναι μεγαλύτερη από 0€!");
-                    return;
-                }
+                if (qty <= 0) { alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!"); return; }
+                if (type !== 'donation' && (priceRaw === "" || isNaN(parsedPrice))) { alert("❌ Σφάλμα: Το ποσό δεν μπορεί να είναι άδειο!"); return; }
+                if (type !== 'donation' && parsedPrice < 0) { alert("❌ Σφάλμα: Δεν επιτρέπονται αρνητικές τιμές!"); return; }
+                if (type === 'sale' && parsedPrice === 0) { alert("❌ Σφάλμα: Η τιμή πώλησης πρέπει να είναι > 0€!"); return; }
 
                 if (type !== 'donation' && priceRaw.includes('.')) {
                     const decimals = priceRaw.split('.')[1];
-                    if (decimals && decimals.length > 2) {
-                        alert("❌ Σφάλμα: Μέχρι 2 δεκαδικά ψηφία!");
-                        return;
-                    }
+                    if (decimals && decimals.length > 2) { alert("❌ Σφάλμα: Μέχρι 2 δεκαδικά ψηφία!"); return; }
                 }
 
                 const price = type === 'donation' ? 0 : parsedPrice;
@@ -476,19 +495,13 @@
                     cachedData[model].total_cost = parseFloat(cachedData[model].total_cost) + price;
                     logType = "🔄 Αγορά";
                 } else if (type === 'sale') {
-                    if (parseInt(cachedData[model].stock) < qty) {
-                        alert("❌ Δεν υπάρχει αρκετό στοκ!");
-                        return;
-                    }
+                    if (parseInt(cachedData[model].stock) < qty) { alert("❌ Δεν υπάρχει αρκετό στοκ!"); return; }
                     cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
                     cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
                     cachedData[model].sold_profit = parseFloat(cachedData[model].sold_profit) + price;
                     logType = "💰 Πώληση";
                 } else if (type === 'donation') {
-                    if (parseInt(cachedData[model].stock) < qty) {
-                        alert("❌ Δεν υπάρχει αρκετό στοκ!");
-                        return;
-                    }
+                    if (parseInt(cachedData[model].stock) < qty) { alert("❌ Δεν υπάρχει αρκετό στοκ!"); return; }
                     cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
                     cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
                     logType = "🎁 Δωρεά";
@@ -496,27 +509,16 @@
 
                 try {
                     await setDoc(docRef, cachedData);
-
                     const now = new Date();
                     const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'});
                     
                     await addDoc(collection(db, "transactions"), {
-                        timestamp: now,
-                        timeLabel: timeString,
-                        type: logType,
-                        model: model,
-                        qty: qty,
-                        price: price,
-                        reference: referenceValue, // Αποθήκευση στοιχείων Πελάτη/Προμηθευτή
-                        user: currentUser ? currentUser.email : "Άγνωστος"
+                        timestamp: now, timeLabel: timeString, type: logType, model: model, qty: qty, price: price, reference: referenceValue, user: currentUser ? currentUser.email : "Άγνωστος"
                     });
 
-                    // Καθαρισμός των πεδίων της συγκεκριμένης κάρτας
                     qtyInput.value = "";
                     priceInput.value = "";
                     refInput.value = "";
-                    
-                    // Ομαλή επανασχεδίαση χωρίς Reload
                     renderInventory(cachedData);
                     
                 } catch (error) {
@@ -536,15 +538,15 @@
                 }
                 snapshot.forEach((doc) => {
                     const tx = doc.data();
-                    let colorClass = "text-blue-600 bg-blue-50 border-blue-100";
+                    let colorClass = "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/50";
                     let entityPrefix = "🏢 Στοιχεία:";
                     
                     if (tx.type.includes("Πώληση")) {
-                        colorClass = "text-green-600 bg-green-50 border-green-100";
+                        colorClass = "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20 border-green-100 dark:border-green-900/50";
                         entityPrefix = "👤 Πελάτης:";
                     }
                     if (tx.type.includes("Δωρεά")) {
-                        colorClass = "text-purple-600 bg-purple-50 border-purple-100";
+                        colorClass = "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900/50";
                         entityPrefix = "🎁 Σχόλιο/Ref:";
                     }
                     if (tx.type.includes("Αγορά")) {
@@ -559,10 +561,10 @@
                     logRow.innerHTML = `
                         <div>
                             <span class="font-bold">${tx.type}</span>: ${tx.qty}x ${tx.model}
-                            <div class="text-[11px] font-bold text-gray-700 mt-0.5">${entityPrefix} <span class="underline">${displayRef}</span></div>
-                            <div class="text-[10px] text-gray-400 mt-0.5">${tx.timeLabel} • Από: <span class="font-semibold">${userLabel}</span></div>
+                            <div class="text-[11px] font-bold text-gray-700 dark:text-gray-300 mt-0.5">${entityPrefix} <span class="underline">${displayRef}</span></div>
+                            <div class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">${tx.timeLabel} • Από: <span class="font-semibold">${userLabel}</span></div>
                         </div>
-                        <span class="font-black text-gray-700 text-sm">${tx.price.toFixed(2)}€</span>
+                        <span class="font-black text-gray-700 dark:text-gray-200 text-sm">${tx.price.toFixed(2)}€</span>
                     `;
                     txContainer.appendChild(logRow);
                 });
