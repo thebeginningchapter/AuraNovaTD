@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured</title>
+    <title>AuraNovaTD WMS Ultra Secured v4</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 font-sans p-4">
@@ -103,7 +103,6 @@
         let cachedData = null;
         let unsubscribeTransactions = null;
 
-        // Παρακολούθηση αν ο χρήστης είναι συνδεδεμένος
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById("login-screen").classList.add("hidden");
@@ -117,12 +116,10 @@
             }
         });
 
-        // Σύνδεση
         window.loginWithFirebase = async function() {
             const email = document.getElementById("email-input").value;
             const password = document.getElementById("password-input").value;
             const errorMsg = document.getElementById("login-error");
-            
             try {
                 errorMsg.classList.add("hidden");
                 await signInWithEmailAndPassword(auth, email, password);
@@ -132,7 +129,6 @@
             }
         };
 
-        // Αποσύνδεση
         window.logoutWithFirebase = async function() {
             await signOut(auth);
         };
@@ -141,17 +137,14 @@
             try {
                 const docSnap = await getDoc(docRef);
                 let data = {};
-
                 if (docSnap.exists()) {
                     data = docSnap.data();
                 }
-
                 models.forEach(model => {
                     if (!data[model]) {
                         data[model] = { stock: 0, sold: 0, total_cost: 0, sold_profit: 0 };
                     }
                 });
-
                 cachedData = data;
                 renderInventory(data);
             } catch (error) {
@@ -170,7 +163,6 @@
 
             models.forEach(model => {
                 const stats = data[model];
-                
                 const currentStock = stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
                 const soldCount = stats.hasOwnProperty('sold') ? parseInt(stats.sold) : 0;
                 
@@ -206,9 +198,10 @@
                     </div>
                     
                     <div class="space-y-2 bg-gray-100/50 p-3 rounded-lg">
-                        <div class="flex gap-2">
-                            <button onclick="window.submitAction('${model}', 'restock')" class="w-1/2 bg-blue-600 text-white font-bold py-1.5 px-2 rounded-lg text-xs active:bg-blue-800 transition-colors">🔄 Restock</button>
-                            <button onclick="window.submitAction('${model}', 'sale')" class="w-1/2 bg-green-600 text-white font-bold py-1.5 px-2 rounded-lg text-xs active:bg-green-800 transition-colors">💰 Πώληση</button>
+                        <div class="flex gap-1.5">
+                            <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Restock</button>
+                            <button onclick="window.submitAction('${model}', 'sale')" class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
+                            <button onclick="window.submitAction('${model}', 'donation')" class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
                         </div>
                         <div class="flex gap-2 text-xs">
                             <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
@@ -228,10 +221,18 @@
                 const priceInput = document.getElementById(`price_${safeId}`);
                 
                 const qty = parseInt(qtyInput.value) || 0;
-                const price = parseFloat(priceInput.value) || 0;
+                // Αν είναι δωρεά, το price παραμένει 0 αυτόματα χωρίς να ελέγχει το input
+                const price = type === 'donation' ? 0 : parseFloat(priceInput.value);
 
+                // 1. Έλεγχος για τα Τεμάχια (Υποχρεωτικό για όλα)
                 if (qty <= 0) {
                     alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
+                    return;
+                }
+
+                // 2. ΣΥΣΤΗΜΙΚΟ ΚΛΕΙΔΩΜΑ: Έλεγχος αν το ποσό είναι κενό (NaN) ή αρνητικό (Μόνο για Restock και Πώληση)
+                if (type !== 'donation' && (isNaN(price) || priceInput.value.trim() === "")) {
+                    alert("❌ Σφάλμα: Πρέπει να πληκτρολογήσεις ένα ποσό (έστω και 0)! Το πεδίο δεν μπορεί να μείνει άδειο.");
                     return;
                 }
 
@@ -254,6 +255,15 @@
                     cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
                     cachedData[model].sold_profit = parseFloat(cachedData[model].sold_profit) + price;
                     logType = "💰 Πώληση";
+                } else if (type === 'donation') {
+                    if (parseInt(cachedData[model].stock) < qty) {
+                        alert("❌ Δεν υπάρχει αρκετό στοκ για δωρεά!");
+                        return;
+                    }
+                    // Στη δωρεά μειώνεται το στοκ και αυξάνονται τα δοθέντα/πουλημένα, αλλά με 0€ κέρδος
+                    cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
+                    cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
+                    logType = "🎁 Δωρεά";
                 }
 
                 if (cachedData[model].hasOwnProperty('total_stock')) {
@@ -293,7 +303,9 @@
 
                 snapshot.forEach((doc) => {
                     const tx = doc.data();
-                    const colorClass = tx.type.includes("Πώληση") ? "text-green-600 bg-green-50" : "text-blue-600 bg-blue-50";
+                    let colorClass = "text-blue-600 bg-blue-50";
+                    if (tx.type.includes("Πώληση")) colorClass = "text-green-600 bg-green-50";
+                    if (tx.type.includes("Δωρεά")) colorClass = "text-purple-600 bg-purple-50";
                     
                     const logRow = document.createElement("div");
                     logRow.className = `p-2 rounded border border-gray-100 flex justify-between items-center ${colorClass}`;
