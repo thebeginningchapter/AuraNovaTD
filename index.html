@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD WMS Ultra Secured v8</title>
+    <title>AuraNovaTD WMS Ultra Secured v9</title>
     <!-- Tailwind CSS για Pro Σχεδιασμό -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -42,9 +42,12 @@
     <div id="main-app" class="hidden">
         <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mb-6">
             <div class="flex justify-between items-center mb-2">
-                <!-- 🆕 ΕΝΗΜΕΡΩΣΗ ΤΙΤΛΟΥ ΣΕ v8 (Locked Decimals) -->
-                <h1 class="text-2xl font-bold text-gray-800">📦 AuraNovaTD WMS v8 (Locked)</h1>
-                <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
+                <h1 class="text-xl font-bold text-gray-800">📦 AuraNovaTD WMS v9</h1>
+                <div class="flex gap-2">
+                    <!-- 🆕 ΚΟΥΜΠΙ ΓΙΑ ΑΜΕΣΕΣ ΔΙΟΡΘΩΣΕΙΣ -->
+                    <button onclick="window.toggleAdminPanel()" class="text-xs bg-amber-50 text-amber-700 px-2 py-1.5 rounded-lg hover:bg-amber-100 font-bold transition-colors border border-amber-200">⚙️ Διορθώσεις</button>
+                    <button onclick="window.logoutWithFirebase()" class="text-xs bg-red-50 text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">Έξοδος</button>
+                </div>
             </div>
             <p class="text-xs text-blue-500 font-semibold mb-4">Secured Supply Chain System</p>
             
@@ -106,6 +109,9 @@
         ];
 
         const MIN_SAFETY_STOCK = 3;
+        const MASTER_PIN = "1994"; // 🔒 Το PIN σου για τις διορθώσεις
+        let isAdminAuthenticated = false;
+
         const docRef = doc(db, "wms", "inventory");
         let cachedData = null;
         let unsubscribeTransactions = null;
@@ -120,6 +126,7 @@
                 document.getElementById("login-screen").classList.remove("hidden");
                 document.getElementById("main-app").classList.add("hidden");
                 if (unsubscribeTransactions) unsubscribeTransactions();
+                isAdminAuthenticated = false;
             }
         });
 
@@ -138,6 +145,24 @@
 
         window.logoutWithFirebase = async function() {
             await signOut(auth);
+        };
+
+        // 🆕 ⚙️ ΕΛΕΓΧΟΣ ΚΑΙ ΕΝΕΡΓΟΠΟΙΗΣΗ ADMIN PANEL
+        window.toggleAdminPanel = function() {
+            if (!isAdminAuthenticated) {
+                const inputPin = prompt("🔐 Εισάγετε το Master PIN για να ξεκλειδώσουν οι διορθώσεις:");
+                if (inputPin === MASTER_PIN) {
+                    isAdminAuthenticated = true;
+                    alert("🔓 Επιτυχής σύνδεση διαχειριστή! Τώρα μπορείς να τροποποιήσεις απευθείας τα πεδία των iPhone.");
+                    renderInventory(cachedData);
+                } else if (inputPin !== null) {
+                    alert("❌ Λάθος PIN! Πρόσβαση ανεπιτυχής.");
+                }
+            } else {
+                isAdminAuthenticated = false;
+                alert("🔒 Το Admin Panel κλειδώθηκε ξανά.");
+                renderInventory(cachedData);
+            }
         };
 
         async function loadInventory() {
@@ -172,12 +197,11 @@
                 const stats = data[model];
                 const currentStock = stats.hasOwnProperty('stock') ? parseInt(stats.stock) : 0;
                 const soldCount = stats.hasOwnProperty('sold') ? parseInt(stats.sold) : 0;
+                const totalCost = stats.hasOwnProperty('total_cost') ? parseFloat(stats.total_cost) : 0;
+                const soldProfit = stats.hasOwnProperty('sold_profit') ? parseFloat(stats.sold_profit) : 0;
                 
-                const calculatedTotalStock = stats.hasOwnProperty('total_stock') && !stats.hasOwnProperty('sold') 
-                    ? parseInt(stats.total_stock) 
-                    : (currentStock + soldCount);
-                
-                const netProfit = ((parseFloat(stats.sold_profit) || 0) - (parseFloat(stats.total_cost) || 0)).toFixed(2);
+                const calculatedTotalStock = (currentStock + soldCount);
+                const netProfit = (soldProfit - totalCost).toFixed(2);
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
                 
                 const isLowStock = currentStock > 0 && currentStock < MIN_SAFETY_STOCK;
@@ -192,36 +216,98 @@
 
                 const card = document.createElement("div");
                 card.className = `border rounded-xl p-4 mb-4 shadow-sm transition-all ${cardBg}`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-base font-bold text-gray-800">📱 ${model}</h3>
-                        ${isLowStock ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">REORDER</span>' : ''}
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-3">
-                        <div class="bg-gray-100/80 p-2 rounded"><b>Στοκ:</b> <span class="${isLowStock ? 'text-red-600 font-bold' : ''}">${currentStock}</span></div>
-                        <div class="bg-gray-100/80 p-2 rounded"><b>Πουλήθηκαν:</b> ${soldCount}</div>
-                        <div class="bg-blue-50 p-2 rounded text-blue-700 font-medium"><b>Συνολικά:</b> ${calculatedTotalStock}</div>
-                        <div class="bg-gray-100/80 p-2 rounded"><b>Κέρδος:</b> <span class="${netProfit >= 0 ? 'text-green-600' : 'text-red-600'} font-medium">${netProfit}€</span></div>
-                    </div>
-                    
-                    <div class="space-y-2 bg-gray-100/50 p-3 rounded-lg">
-                        <div class="flex gap-1.5">
-                            <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Restock</button>
-                            <button onclick="window.submitAction('${model}', 'sale')" class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
-                            <button onclick="window.submitAction('${model}', 'donation')" class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
+                
+                // 🆕 ΑΛΛΑΓΗ ΔΙΑΣΤΑΣΗΣ ΑΝ ΕΙΝΑΙ ADMIN Η ΟΧΙ
+                if (!isAdminAuthenticated) {
+                    // Κανονική Προβολή Χρήστη
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-base font-bold text-gray-800">📱 ${model}</h3>
+                            ${isLowStock ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">REORDER</span>' : ''}
                         </div>
-                        <div class="flex gap-2 text-xs">
-                            <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
-                            <!-- 🆕 step="0.01" για να υποστηρίζει σεντς σωστά στον browser -->
-                            <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.01" min="0">
+                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-3">
+                            <div class="bg-gray-100/80 p-2 rounded"><b>Στοκ:</b> <span class="${isLowStock ? 'text-red-600 font-bold' : ''}">${currentStock}</span></div>
+                            <div class="bg-gray-100/80 p-2 rounded"><b>Πουλήθηκαν:</b> ${soldCount}</div>
+                            <div class="bg-blue-50 p-2 rounded text-blue-700 font-medium"><b>Συνολικά:</b> ${calculatedTotalStock}</div>
+                            <div class="bg-gray-100/80 p-2 rounded"><b>Κέρδος:</b> <span class="${netProfit >= 0 ? 'text-green-600' : 'text-red-600'} font-medium">${netProfit}€</span></div>
                         </div>
-                    </div>
-                `;
+                        
+                        <div class="space-y-2 bg-gray-100/50 p-3 rounded-lg">
+                            <div class="flex gap-1.5">
+                                <button onclick="window.submitAction('${model}', 'restock')" class="w-1/3 bg-blue-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-blue-800 transition-colors">🔄 Restock</button>
+                                <button onclick="window.submitAction('${model}', 'sale')" class="w-1/3 bg-green-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-green-800 transition-colors">💰 Πώληση</button>
+                                <button onclick="window.submitAction('${model}', 'donation')" class="w-1/3 bg-purple-600 text-white font-bold py-1.5 px-1 rounded-md text-[11px] active:bg-purple-800 transition-colors">🎁 Δωρεά</button>
+                            </div>
+                            <div class="flex gap-2 text-xs">
+                                <input type="number" id="qty_${safeId}" placeholder="Τεμάχια" class="w-1/2 p-1.5 border rounded-md bg-white" min="1">
+                                <input type="number" id="price_${safeId}" placeholder="Ποσό (€)" class="w-1/2 p-1.5 border rounded-md bg-white" step="0.01" min="0">
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 🆕 Πάνελ Άμεσης Διόρθωσης (Admin View)
+                    card.innerHTML = `
+                        <div class="bg-amber-50/50 p-3 rounded-xl border border-amber-200">
+                            <h3 class="text-sm font-bold text-amber-900 mb-2">⚙️ Διόρθωση: ${model}</h3>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between items-center">
+                                    <label class="w-1/2 font-semibold">Τρέχον Στοκ:</label>
+                                    <input type="number" id="edit_stock_${safeId}" value="${currentStock}" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                    </div>
+                                <div class="flex justify-between items-center">
+                                    <label class="w-1/2 font-semibold">Πουλημένα:</label>
+                                    <input type="number" id="edit_sold_${safeId}" value="${soldCount}" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <label class="w-1/2 font-semibold">Συν. Κόστος Αγοράς (€):</label>
+                                    <input type="number" id="edit_cost_${safeId}" value="${totalCost}" step="0.01" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <label class="w-1/2 font-semibold">Συν. Έσοδα Πωλήσεων (€):</label>
+                                    <input type="number" id="edit_profit_${safeId}" value="${soldProfit}" step="0.01" class="w-1/2 p-1 border rounded bg-white font-bold text-center">
+                                </div>
+                                <button onclick="window.saveDirectEdit('${model}')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg mt-2 shadow-sm transition-colors">
+                                    💾 Αποθήκευση Αλλαγών
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
                 container.appendChild(card);
             });
 
             if (hasAlerts) alertsContainer.classList.remove("hidden");
             else alertsContainer.classList.add("hidden");
+
+            // 🆕 ΣΥΝΑΡΤΗΣΗ ΑΠΟΘΗΚΕΥΣΗΣ ΔΙΟΡΘΩΣΕΩΝ
+            window.saveDirectEdit = async (model) => {
+                const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
+                
+                const newStock = parseInt(document.getElementById(`edit_stock_${safeId}`).value) || 0;
+                const newSold = parseInt(document.getElementById(`edit_sold_${safeId}`).value) || 0;
+                const newCost = parseFloat(document.getElementById(`edit_cost_${safeId}`).value) || 0;
+                const newProfit = parseFloat(document.getElementById(`edit_profit_${safeId}`).value) || 0;
+
+                if(newStock < 0 || newSold < 0 || newCost < 0 || newProfit < 0) {
+                    alert("❌ Δεν επιτρέπονται αρνητικές τιμές στις διορθώσεις!");
+                    return;
+                }
+
+                cachedData[model] = {
+                    stock: newStock,
+                    sold: newSold,
+                    total_cost: newCost,
+                    sold_profit: newProfit
+                };
+
+                try {
+                    await setDoc(docRef, cachedData);
+                    alert(`✅ Οι αλλαγές για το ${model} αποθηκεύτηκαν επιτυχώς!`);
+                    renderInventory(cachedData);
+                } catch (error) {
+                    alert("❌ Σφάλμα κατά την αποθήκευση στη βάση.");
+                }
+            };
 
             window.submitAction = async (model, type) => {
                 const safeId = btoa(unescape(encodeURIComponent(model))).replace(/=/g, "");
@@ -232,45 +318,35 @@
                 const priceRaw = priceInput.value.trim();
                 const parsedPrice = parseFloat(priceRaw);
                 
-                // 1. Γενικός Έλεγχος για τα Τεμάχια
                 if (qty <= 0) {
                     alert("❌ Πρέπει να δηλώσεις τουλάχιστον 1 τεμάχιο!");
                     return;
                 }
 
-                // 2. Απόλυτος Έλεγχος Κενού/Μη Έγκυρου Πεδίου (εκτός αν είναι Δωρεά)
                 if (type !== 'donation' && (priceRaw === "" || isNaN(parsedPrice))) {
                     alert("❌ Σφάλμα: Το πεδίο του ποσού δεν μπορεί να είναι άδειο!");
                     return;
                 }
 
-                // 3. Αποκλεισμός Αρνητικών Τιμών για όλες τις κινήσεις
                 if (type !== 'donation' && parsedPrice < 0) {
                     alert("❌ Σφάλμα Ασφαλείας: Δεν επιτρέπονται αρνητικές τιμές στο ποσό!");
                     return;
                 }
 
-                // 4. Απόλυτο Κλείδωμα Πώλησης με 0€
                 if (type === 'sale' && parsedPrice === 0) {
                     alert("❌ Σφάλμα Ασφαλείας: Η τιμή πώλησης ΠΡΕΠΕΙ να είναι μεγαλύτερη από 0€!\n\nΑν δίνεις το προϊόν δωρεάν, πάτα το μωβ κουμπί 'Δωρεά'.");
                     return;
                 }
 
-                // 5. 🆕 ΕΛΕΓΧΟΣ ΔΕΚΑΔΙΚΩΝ ΨΗΦΙΩΝ (Μέχρι 2 δεκαδικά)
                 if (type !== 'donation' && priceRaw.includes('.')) {
                     const decimals = priceRaw.split('.')[1];
                     if (decimals && decimals.length > 2) {
-                        alert("❌ Σφάλμα: Το ποσό δεν μπορεί να έχει πάνω από 2 δεκαδικά ψηφία (π.χ. βάλε 15.50 και όχι 15.555)!");
+                        alert("❌ Σφάλμα: Το ποσό δεν μπορεί να έχει πάνω από 2 δεκαδικά ψηφία!");
                         return;
                     }
                 }
 
                 const price = type === 'donation' ? 0 : parsedPrice;
-
-                if (!cachedData[model].hasOwnProperty('stock')) cachedData[model].stock = 0;
-                if (!cachedData[model].hasOwnProperty('sold')) cachedData[model].sold = 0;
-                if (!cachedData[model].hasOwnProperty('total_cost')) cachedData[model].total_cost = 0;
-                if (!cachedData[model].hasOwnProperty('sold_profit')) cachedData[model].sold_profit = 0;
 
                 let logType = "";
                 if (type === 'restock') {
@@ -294,10 +370,6 @@
                     cachedData[model].stock = parseInt(cachedData[model].stock) - qty;
                     cachedData[model].sold = parseInt(cachedData[model].sold) + qty;
                     logType = "🎁 Δωρεά";
-                }
-
-                if (cachedData[model].hasOwnProperty('total_stock')) {
-                    delete cachedData[model].total_stock;
                 }
 
                 await setDoc(docRef, cachedData);
