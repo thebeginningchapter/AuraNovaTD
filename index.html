@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD Storefront & ERP v12.0</title>
+    <title>AuraNovaTD ERP & Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,9 +12,6 @@
         }
     </script>
     <style>
-        /* Absolute Fallback CSS for Theme */
-        html.dark { background-color: #111827 !important; color: #f9fafb !important; }
-        html.dark body { background-color: #111827 !important; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .banner-bg {
@@ -24,7 +21,6 @@
         }
     </style>
     <script>
-        // Σωστή αρχικοποίηση Theme
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -38,9 +34,9 @@
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
     </div>
 
-    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-40 -mt-2">
+    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3" onclick="window.location.reload()" class="cursor-pointer">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.reload()">
                 <img src="5cbd8da6-5010-434c-ad8e-eb72f48ed96d-1_all_49069.jpg" alt="AuraNovaTD Logo" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                 <div>
                     <span class="font-black text-xl tracking-wider text-gray-900 dark:text-white">AuraNova<span class="text-blue-600">TD</span></span>
@@ -49,7 +45,9 @@
             </div>
             
             <div class="flex items-center gap-2">
-                <button onclick="window.toggleTheme()" id="theme-btn" class="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm">🌙</button>
+                <button onclick="window.toggleTheme()" id="theme-btn" class="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm shadow-sm">
+                    ☀️
+                </button>
                 <button onclick="window.openLoginModal()" id="nav-login-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3 py-2 rounded-xl transition-colors">🔐 Σύνδεση</button>
                 <button onclick="window.logout()" id="nav-logout-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-xl transition-colors">Έξοδος</button>
             </div>
@@ -57,27 +55,24 @@
     </nav>
 
     <div id="admin-alerts" class="max-w-6xl mx-auto w-full px-4 mt-4 space-y-2 hidden">
-        <div id="stock-alert-banner" class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 text-amber-800 dark:text-amber-200 p-3 rounded-xl text-xs hidden">
-            <span class="font-bold flex items-center gap-1">⚠️ Χαμηλό Απόθεμα:</span>
-            <div id="stock-alert-items" class="flex flex-wrap gap-2 font-mono font-bold mt-1"></div>
-        </div>
-        <div id="stale-orders-banner" class="bg-red-50 dark:bg-red-950/40 border border-red-200 text-red-800 dark:text-red-200 p-3 rounded-xl text-xs hidden flex-col gap-2 shadow-sm">
-            <span class="font-bold">🚨 Προσοχή: Υπάρχουν παραγγελίες σε "Αναμονή" άνω των 24 ωρών χωρίς πληρωμή!</span>
+        <div id="stale-orders-banner" class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 p-3 rounded-xl text-xs hidden flex-col gap-2 shadow-sm">
+            <span class="font-bold">🚨 Προσοχή: Υπάρχουν παραγγελίες σε "Αναμονή" άνω των 24 ωρών!</span>
             <div id="stale-orders-list" class="space-y-1"></div>
         </div>
     </div>
 
-    <main class="flex-grow max-w-6xl mx-auto w-full p-4 space-y-8">
+    <main class="flex-grow max-w-6xl mx-auto w-full p-4 space-y-8 mt-2">
 
         <div id="guest-view" class="space-y-6">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 h-fit">
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">🔍 Ασφαλής Αναζήτηση Παραγγελίας</h3>
+                    <p class="text-[10px] text-gray-500 mb-3">Εισάγετε τον κωδικό και το τηλέφωνο που δηλώσατε για να δείτε την κατάσταση.</p>
                     <div class="space-y-3">
-                        <input type="text" id="track-order-id" placeholder="Κωδικός Παραγγελίας (π.χ. A1B2...)" class="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono">
-                        <input type="tel" id="track-order-phone" placeholder="Τηλέφωνο Επικοινωνίας (Επιβεβαίωση)" class="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono">
-                        <button onclick="window.trackOrder()" class="w-full bg-blue-600 text-white font-bold px-4 py-2.5 rounded-lg text-xs hover:bg-blue-700 shadow-sm transition">Αναζήτηση & Κατάσταση</button>
+                        <input type="text" id="track-order-id" placeholder="Κωδικός Παραγγελίας..." class="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono">
+                        <input type="tel" id="track-order-phone" placeholder="Τηλέφωνο Επικοινωνίας..." class="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono">
+                        <button onclick="window.trackOrder()" class="w-full bg-blue-600 text-white font-bold px-4 py-2.5 rounded-lg text-xs hover:bg-blue-700 transition">Αναζήτηση Κατάστασης</button>
                     </div>
                     <div id="track-result" class="mt-4 p-3 rounded-xl text-xs bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hidden"></div>
                 </div>
@@ -89,14 +84,14 @@
                 </div>
             </div>
 
-            <div id="checkout-section" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border-2 border-blue-500 hidden max-w-2xl mx-auto relative overflow-hidden">
+            <div id="checkout-section" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border-2 border-blue-500 hidden max-w-2xl mx-auto relative">
                 <button onclick="document.getElementById('checkout-section').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold bg-gray-100 dark:bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
                 
                 <h3 class="text-lg font-black text-gray-900 dark:text-white mb-4">🛒 Ολοκλήρωση Αγοράς</h3>
                 
                 <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-6 flex justify-between items-center border border-blue-100 dark:border-blue-800">
                     <div>
-                        <p class="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-bold">Επιλεγμενο Προϊον</p>
+                        <p class="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-bold">Προϊον</p>
                         <p id="checkout-item-name" class="font-bold text-base text-gray-900 dark:text-white"></p>
                         <p class="text-xs text-gray-500 mt-1">Τιμή Μονάδας: <span id="checkout-unit-price" class="font-mono font-bold"></span>€</p>
                     </div>
@@ -125,7 +120,7 @@
                     </div>
                     <div>
                         <label class="text-[11px] font-bold text-gray-500 uppercase">Χώρα *</label>
-                        <select id="cust-country" class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700 cursor-not-allowed">
+                        <select id="cust-country" disabled class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-100 dark:bg-gray-600 opacity-80 cursor-not-allowed">
                             <option value="GR" selected>Ελλάδα</option>
                         </select>
                     </div>
@@ -134,7 +129,7 @@
                         <select id="cust-payment" onchange="window.updatePaymentUI()" class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
                             <option value="bank">🏦 Τραπεζική Κατάθεση</option>
                             <option value="iris">📱 IRIS Payments</option>
-                            <option value="vinted" id="opt-vinted">🛍️ Vinted (Ασφαλής Συναλλαγή)</option>
+                            <option value="vinted" id="opt-vinted">🛍️ Vinted</option>
                         </select>
                     </div>
                 </div>
@@ -150,8 +145,8 @@
                     </div>
                 </div>
 
-                <button onclick="window.submitOnlineOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-xl text-sm mt-6 uppercase tracking-wider transition-all shadow-lg transform hover:scale-[1.01]">
-                    Καταχώρηση & Έκδοση Κωδικού 🚀
+                <button onclick="window.submitOnlineOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-xl text-sm mt-6 uppercase tracking-wider transition-all shadow-lg">
+                    Καταχώρηση & Έκδοση Κωδικού
                 </button>
             </div>
         </div>
@@ -159,25 +154,19 @@
         <div id="management-view" class="hidden space-y-6">
             
             <div class="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2 overflow-x-auto">
-                <button onclick="window.switchTab('tab-inventory')" id="btn-tab-inventory" class="tab-btn active px-4 py-2 font-bold text-xs rounded-lg bg-blue-600 text-white shadow-sm">📦 Αποθήκη</button>
+                <button onclick="window.switchTab('tab-inventory')" id="btn-tab-inventory" class="tab-btn active px-4 py-2 font-bold text-xs rounded-lg bg-blue-600 text-white shadow-sm">📦 Αποθήκη & Logs</button>
                 <button onclick="window.switchTab('tab-orders')" id="btn-tab-orders" class="tab-btn px-4 py-2 font-bold text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">📋 Παραγγελίες</button>
                 <button onclick="window.switchTab('tab-directories')" id="btn-tab-directories" class="tab-btn px-4 py-2 font-bold text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">👥 Συνεργάτες</button>
-                <button onclick="window.switchTab('tab-admin')" id="btn-tab-admin" class="tab-btn hidden px-4 py-2 font-bold text-xs rounded-lg text-amber-600 bg-amber-50 border border-amber-200">⚙️ Master Admin Panel</button>
+                <button onclick="window.switchTab('tab-admin')" id="btn-tab-admin" class="tab-btn hidden px-4 py-2 font-bold text-xs rounded-lg text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">⚙️ Batch Importer</button>
             </div>
 
             <div id="tab-inventory" class="tab-content active space-y-4">
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <input type="text" id="live-search-inventory" oninput="window.renderAdminInventory()" placeholder="🔍 Άμεση αναζήτηση προϊόντος..." class="w-full p-2.5 text-xs border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="live-search-inventory" oninput="window.renderAdminInventory()" placeholder="🔍 Άμεση αναζήτηση προϊόντος (Live)..." class="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
                     </div>
                     <div class="flex gap-2">
-                        <select id="filter-tx-type" onchange="window.renderLogs()" class="p-2.5 text-xs border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 w-1/3">
-                            <option value="all">Όλες οι Κινήσεις</option>
-                            <option value="Αγορά">Αγορές</option>
-                            <option value="Πώληση">Πωλήσεις</option>
-                            <option value="Δωρεά">Δωρεές</option>
-                        </select>
-                        <input type="text" id="search-tx-text" oninput="window.renderLogs()" placeholder="Αναζήτηση στο Log..." class="w-2/3 p-2.5 text-xs border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700">
+                        <input type="text" id="live-search-logs" oninput="window.renderLogs()" placeholder="Αναζήτηση σε Ιστορικό / Τύπο / Πελάτη..." class="w-full p-2.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
                     </div>
                 </div>
 
@@ -186,16 +175,16 @@
                         <div id="inventory-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 h-fit">
-                        <h3 class="text-sm font-bold border-b pb-2 mb-3">📜 Ιστορικό ERP</h3>
+                        <h3 class="text-sm font-bold border-b dark:border-gray-700 pb-2 mb-3">📜 Ιστορικό ERP</h3>
                         <div id="transactions-container" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
                     </div>
                 </div>
             </div>
 
             <div id="tab-orders" class="tab-content space-y-4">
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <input type="text" id="live-search-orders" oninput="window.renderOrdersTable()" placeholder="🔍 Αναζήτηση βάσει Κωδικού, Ονόματος, Τηλεφώνου..." class="w-1/2 p-2 text-xs border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <select id="filter-order-status" onchange="window.renderOrdersTable()" class="p-2 text-xs border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center gap-4">
+                    <input type="text" id="live-search-orders" oninput="window.renderOrdersTable()" placeholder="🔍 Αναζήτηση Κωδικού, Ονόματος (Live)..." class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <select id="filter-order-status" onchange="window.renderOrdersTable()" class="p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 min-w-[150px]">
                         <option value="all">Όλες οι καταστάσεις</option>
                         <option value="pending">⏳ Αναμονή</option>
                         <option value="confirmed">✅ Επιβεβαιώθηκε</option>
@@ -204,7 +193,7 @@
                         <option value="cancelled">❌ Ακυρώθηκε</option>
                     </select>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-gray-100 dark:bg-gray-700 font-bold uppercase text-[10px]">
@@ -223,13 +212,13 @@
 
             <div id="tab-directories" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border">
-                        <input type="text" id="search-client-text" oninput="window.renderDirectories()" placeholder="🔍 Αναζήτηση Πελάτη..." class="w-full p-2 mb-3 text-xs border rounded bg-gray-50 dark:bg-gray-700">
-                        <div id="clients-list-container" class="space-y-2 max-h-[400px] overflow-y-auto"></div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700">
+                        <input type="text" id="search-client-text" oninput="window.renderDirectories()" placeholder="🔍 Αναζήτηση Πελάτη (Live)..." class="w-full p-2 mb-3 text-xs border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700">
+                        <div id="clients-list-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
                     </div>
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border">
-                        <input type="text" id="search-supplier-text" oninput="window.renderDirectories()" placeholder="🔍 Αναζήτηση Προμηθευτή..." class="w-full p-2 mb-3 text-xs border rounded bg-gray-50 dark:bg-gray-700">
-                        <div id="suppliers-list-container" class="space-y-2 max-h-[400px] overflow-y-auto"></div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700">
+                        <input type="text" id="search-supplier-text" oninput="window.renderDirectories()" placeholder="🔍 Αναζήτηση Προμηθευτή (Live)..." class="w-full p-2 mb-3 text-xs border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700">
+                        <div id="suppliers-list-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
                     </div>
                 </div>
             </div>
@@ -237,42 +226,30 @@
             <div id="tab-admin" class="tab-content space-y-6">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border-2 border-amber-500 shadow-sm">
                     <h3 class="text-sm font-bold text-amber-600 mb-4 flex items-center gap-2">📦 Εργαλείο Μαζικής Εισαγωγής (No-Code)</h3>
-                    <select id="batch-type" onchange="window.resetBatchForm()" class="mb-4 p-2 text-xs border rounded bg-gray-50 dark:bg-gray-700 font-bold">
+                    <select id="batch-type" onchange="window.resetBatchForm()" class="mb-4 p-2 text-xs border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 font-bold">
                         <option value="products">Εισαγωγή Νέων Προϊόντων</option>
                         <option value="clients">Εισαγωγή Πελατών</option>
                         <option value="suppliers">Εισαγωγή Προμηθευτών</option>
                     </select>
                     
-                    <div class="overflow-x-auto border rounded-lg bg-gray-50 dark:bg-gray-900 p-2">
-                        <div id="batch-rows-container" class="space-y-2">
+                    <div class="overflow-x-auto border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 p-2">
+                        <div id="batch-rows-container" class="space-y-2 min-w-[600px]">
                             </div>
                     </div>
                     
                     <div class="flex gap-2 mt-4">
                         <button onclick="window.addBatchRow()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg text-xs">+ Προσθήκη Γραμμής</button>
-                        <button onclick="window.executeFriendlyBatch()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-lg text-xs ml-auto">🚀 Εκτέλεση Εισαγωγής</button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border">
-                        <h3 class="text-xs font-bold text-amber-700 mb-3">➕ Καταχώρηση Συνεργάτη</h3>
-                        <div class="space-y-2 text-xs">
-                            <select id="new-entity-type" class="w-full p-2 border rounded"><option value="client">Πελάτης</option><option value="supplier">Προμηθευτής</option></select>
-                            <input type="text" id="new-entity-name" placeholder="Όνομα" class="w-full p-2 border rounded">
-                            <input type="text" id="new-entity-phone" placeholder="Τηλέφωνο (Προαιρετικό για Προμηθευτή)" class="w-full p-2 border rounded">
-                            <button onclick="window.addEntityManual()" class="w-full bg-amber-700 text-white py-2 rounded">Αποθήκευση</button>
-                        </div>
+                        <button onclick="window.executeFriendlyBatch()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-lg text-xs ml-auto shadow-sm">🚀 Εκτέλεση Εισαγωγής</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 py-6 mt-12 text-center text-xs text-gray-500">
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-12 text-center text-xs text-gray-500">
         <div class="flex justify-center gap-4 mb-4">
             <button onclick="document.getElementById('modal-terms').classList.remove('hidden')" class="hover:underline font-bold text-gray-700 dark:text-gray-300">⚖️ Όροι Χρήσης & Ακυρώσεις</button>
-            <span class="text-gray-300">|</span>
+            <span class="text-gray-300 dark:text-gray-600">|</span>
             <button onclick="document.getElementById('modal-payments').classList.remove('hidden')" class="hover:underline font-bold text-gray-700 dark:text-gray-300">💳 Τρόποι Πληρωμής & Κατάθεσης</button>
         </div>
         <div class="flex justify-center gap-6 font-medium text-gray-600 dark:text-gray-400 mb-3">
@@ -284,28 +261,28 @@
     </footer>
 
     <div id="modal-terms" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl max-w-lg w-full relative border border-gray-200">
-            <button onclick="document.getElementById('modal-terms').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-lg">✕</button>
-            <h3 class="font-bold text-lg mb-4 border-b pb-2">⚖️ Όροι & Πολιτική Ακυρώσεων</h3>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl max-w-lg w-full relative border border-gray-200 dark:border-gray-700">
+            <button onclick="document.getElementById('modal-terms').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white text-lg">✕</button>
+            <h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2">⚖️ Όροι & Πολιτική Ακυρώσεων</h3>
             <div class="space-y-3 text-xs text-gray-600 dark:text-gray-300 leading-relaxed max-h-96 overflow-y-auto pr-2">
-                <p><b>1. Επιβεβαίωση Παραγγελίας:</b> Για την ομαλή ολοκλήρωση και αποστολή της παραγγελίας σας, απαραίτητη προϋπόθεση αποτελεί η εξόφληση του αντίστοιχου ποσού. Σε περίπτωση παρέλευσης <b>24 ωρών</b> χωρίς επιβεβαίωση πληρωμής, το σύστημα προχωρά σε αυτόματη ακύρωση της παραγγελίας για την αποδέσμευση του αποθέματος.</p>
-                <p><b>2. Ακυρώσεις:</b> Μπορείτε να ζητήσετε ακύρωση της παραγγελίας σας μέσω της πλατφόρμας, εφόσον αυτή βρίσκεται σε κατάσταση «Αναμονής» ή «Επιβεβαιώθηκε». Αν η παραγγελία έχει ήδη παραδοθεί στην εταιρεία ταχυμεταφορών (Courier), η ακύρωση δεν είναι πλέον εφικτή.</p>
-                <p><b>3. Επιστροφές Χρημάτων:</b> Σε περίπτωση έγκυρης ακύρωσης μιας ήδη πληρωμένης παραγγελίας, η επιστροφή των χρημάτων εκτελείται εντός <b>τριών (3) εργάσιμων ημερών</b> από τη στιγμή της ακύρωσης, στον τραπεζικό λογαριασμό ή IBAN που θα μας υποδείξετε.</p>
+                <p><b>1. Επιβεβαίωση Παραγγελίας:</b> Για να ολοκληρωθεί η παραγγελία σας και να ξεκινήσει η αποστολή της, <b>απαραίτητη προϋπόθεση είναι η πληρωμή</b> του αντίστοιχου ποσού. Εάν περάσει <b>προθεσμία 24 ωρών</b> χωρίς επιβεβαίωση πληρωμής, η παραγγελία ακυρώνεται αυτόματα.</p>
+                <p><b>2. Ακυρώσεις:</b> Μπορείτε να ζητήσετε ακύρωση όσο η παραγγελία σας βρίσκεται σε «Αναμονή» ή έχει «Επιβεβαιωθεί». Εάν έχει παραδοθεί στην εταιρεία Courier, δεν μπορεί να ακυρωθεί.</p>
+                <p><b>3. Επιστροφές:</b> Σε περίπτωση ακύρωσης μιας πληρωμένης παραγγελίας, η επιστροφή των χρημάτων σας θα ολοκληρωθεί εντός <b>3 εργάσιμων ημερών</b> από τη στιγμή της ακύρωσης.</p>
             </div>
         </div>
     </div>
 
     <div id="modal-payments" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl max-w-md w-full relative border border-gray-200">
-            <button onclick="document.getElementById('modal-payments').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-lg">✕</button>
-            <h3 class="font-bold text-lg mb-4 border-b pb-2">💳 Τρόποι Κατάθεσης</h3>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl max-w-md w-full relative border border-gray-200 dark:border-gray-700">
+            <button onclick="document.getElementById('modal-payments').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white text-lg">✕</button>
+            <h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2">💳 Τρόποι Κατάθεσης</h3>
             <div class="space-y-4 text-sm text-gray-700 dark:text-gray-200">
-                <div class="bg-blue-50 dark:bg-blue-900/40 p-3 rounded-lg border border-blue-100">
+                <div class="bg-blue-50 dark:bg-blue-900/40 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
                     <p class="font-bold text-blue-800 dark:text-blue-300">🏦 Τράπεζα Πειραιώς</p>
                     <p class="font-mono text-xs mt-1">IBAN: GR7601720000005100000012345</p>
                     <p class="text-xs mt-1">Δικαιούχος: ΤΣΑΓΚΑΔΑΚΗΣ ΔΗΜΗΤΡΙΟΣ</p>
                 </div>
-                <div class="bg-purple-50 dark:bg-purple-900/40 p-3 rounded-lg border border-purple-100">
+                <div class="bg-purple-50 dark:bg-purple-900/40 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
                     <p class="font-bold text-purple-800 dark:text-purple-300">📱 IRIS Payments</p>
                     <p class="font-mono text-xs mt-1">Κινητό: 6992915453</p>
                     <p class="text-xs mt-1">Όνομα: ΔΗΜΗΤΡΙΟΣ ΤΣΑΓΚΑΔΑΚΗΣ</p>
@@ -316,11 +293,12 @@
     </div>
 
     <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-        <div class="bg-white p-6 rounded-2xl w-full max-w-sm relative">
-            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="absolute top-4 right-4">✕</button>
-            <input type="email" id="email-input" placeholder="Email" class="w-full p-2 mb-2 border rounded">
-            <input type="password" id="password-input" placeholder="Pass" class="w-full p-2 mb-2 border rounded">
-            <button onclick="window.login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded">Είσοδος</button>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl w-full max-w-sm relative shadow-xl border dark:border-gray-700">
+            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400">✕</button>
+            <h3 class="font-bold text-lg mb-4 text-center">Διαχείριση</h3>
+            <input type="email" id="email-input" placeholder="Email" class="w-full p-2 mb-3 border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-sm">
+            <input type="password" id="password-input" placeholder="Κωδικός" class="w-full p-2 mb-4 border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-sm">
+            <button onclick="window.login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Είσοδος</button>
         </div>
     </div>
 
@@ -330,106 +308,153 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBrfy1R9m9kRIOyN5MWjm1Dap3XHyMxThM", authDomain: "auranovatd-wms.firebaseapp.com", projectId: "auranovatd-wms"
+            apiKey: "AIzaSyBrfy1R9m9kRIOyN5MWjm1Dap3XHyMxThM", 
+            authDomain: "auranovatd-wms.firebaseapp.com", 
+            projectId: "auranovatd-wms"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let cachedInventory = {}; let cachedOrders = []; let cachedClients = {}; let cachedSuppliers = {}; let rawLogs = [];
-        let userRole = 'guest'; const ADMIN_EMAIL = "dtsagkadakis@gmail.com";
-        const invRef = doc(db, "wms", "inventory"); const dirRef = doc(db, "wms", "directories");
+        // Global State
+        let cachedInventory = {}; 
+        let cachedOrders = []; 
+        let cachedClients = {}; 
+        let cachedSuppliers = {}; 
+        let rawLogs = [];
+        let userRole = 'guest'; 
+        const ADMIN_EMAIL = "dtsagkadakis@gmail.com";
+        
+        const invRef = doc(db, "wms", "inventory"); 
+        const dirRef = doc(db, "wms", "directories");
 
-        // --- THEME ---
+        // --- THEME TOGGLE (Διορθωμένο) ---
         window.toggleTheme = function() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById("theme-btn").innerText = isDark ? "☀️" : "🌙";
+            const htmlClassList = document.documentElement.classList;
+            const themeBtn = document.getElementById("theme-btn");
+            
+            if (htmlClassList.contains('dark')) {
+                htmlClassList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeBtn.innerText = "🌙";
+            } else {
+                htmlClassList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeBtn.innerText = "☀️";
+            }
         };
 
-        // --- AUTH & LOAD ---
+        // Initialize Theme Button Icon on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.getElementById("theme-btn").innerText = "☀️";
+            } else {
+                document.getElementById("theme-btn").innerText = "🌙";
+            }
+        });
+
+        // --- AUTHENTICATION ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userRole = (user.email === ADMIN_EMAIL) ? 'admin' : 'staff';
-                document.getElementById("nav-login-btn").classList.add("hidden"); document.getElementById("nav-logout-btn").classList.remove("hidden");
-                document.getElementById("management-view").classList.remove("hidden"); document.getElementById("role-badge").innerText = userRole;
-                if(userRole==='admin') document.getElementById("btn-tab-admin").classList.remove("hidden");
+                document.getElementById("nav-login-btn").classList.add("hidden"); 
+                document.getElementById("nav-logout-btn").classList.remove("hidden");
+                document.getElementById("management-view").classList.remove("hidden"); 
+                document.getElementById("role-badge").innerText = userRole;
+                if(userRole === 'admin') document.getElementById("btn-tab-admin").classList.remove("hidden");
                 document.getElementById("admin-alerts").classList.remove("hidden");
                 window.switchTab('tab-inventory');
             } else {
                 userRole = 'guest';
-                document.getElementById("nav-login-btn").classList.remove("hidden"); document.getElementById("nav-logout-btn").classList.add("hidden");
-                document.getElementById("management-view").classList.add("hidden"); document.getElementById("admin-alerts").classList.add("hidden");
+                document.getElementById("nav-login-btn").classList.remove("hidden"); 
+                document.getElementById("nav-logout-btn").classList.add("hidden");
+                document.getElementById("management-view").classList.add("hidden"); 
+                document.getElementById("admin-alerts").classList.add("hidden");
                 document.getElementById("role-badge").innerText = "Επισκέπτης";
             }
             await bindData();
         });
 
         window.openLoginModal = () => document.getElementById("login-modal").classList.remove("hidden");
-        window.login = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById("email-input").value, document.getElementById("password-input").value); document.getElementById("login-modal").classList.add("hidden"); } catch(e){ alert("Λάθος στοιχεία"); } };
+        window.login = async () => { 
+            try { 
+                await signInWithEmailAndPassword(auth, document.getElementById("email-input").value, document.getElementById("password-input").value); 
+                document.getElementById("login-modal").classList.add("hidden"); 
+            } catch(e) { alert("Λάθος στοιχεία. Δοκιμάστε ξανά."); } 
+        };
         window.logout = async () => { await signOut(auth); window.location.reload(); };
 
+        // --- DATA BINDING (Realtime) ---
         async function bindData() {
-            onSnapshot(invRef, (s) => { if(s.exists()){ cachedInventory = s.data(); renderPublicStorefront(); if(userRole!=='guest'){renderAdminInventory(); window.checkAlerts();} } });
-            onSnapshot(dirRef, (s) => { if(s.exists()){ cachedClients=s.data().clients||{}; cachedSuppliers=s.data().suppliers||{}; if(userRole!=='guest') window.renderDirectories(); } });
+            onSnapshot(invRef, (s) => { 
+                if(s.exists()){ 
+                    cachedInventory = s.data(); 
+                    renderPublicStorefront(); 
+                    if(userRole !== 'guest') window.renderAdminInventory(); 
+                } 
+            });
+            onSnapshot(dirRef, (s) => { 
+                if(s.exists()){ 
+                    cachedClients = s.data().clients || {}; 
+                    cachedSuppliers = s.data().suppliers || {}; 
+                    if(userRole !== 'guest') window.renderDirectories(); 
+                } 
+            });
             onSnapshot(query(collection(db, "orders"), orderBy("timestamp", "desc")), (s) => {
-                cachedOrders = []; s.forEach(d => cachedOrders.push(d.data()));
-                if(userRole!=='guest'){ window.renderOrdersTable(); window.checkAlerts(); }
+                cachedOrders = []; 
+                s.forEach(d => cachedOrders.push(d.data()));
+                if(userRole !== 'guest'){ window.renderOrdersTable(); window.checkAlerts(); }
             });
             onSnapshot(query(collection(db, "transactions"), orderBy("timestamp", "desc"), limit(50)), (s) => {
-                rawLogs = []; s.forEach(d => rawLogs.push(d.data()));
-                if(userRole!=='guest') window.renderLogs();
+                rawLogs = []; 
+                s.forEach(d => rawLogs.push(d.data()));
+                if(userRole !== 'guest') window.renderLogs();
             });
         }
 
-        // --- ALERTS (LOW STOCK & STALE ORDERS) ---
+        // --- ALERTS (24h Stale Orders) ---
         window.checkAlerts = () => {
-            if(userRole==='guest') return;
-            // 1. Stock
-            let stockHtml = ""; let low = false;
-            Object.keys(cachedInventory).forEach(k => { if(cachedInventory[k].status==='active' && cachedInventory[k].stock < 3){ low=true; stockHtml+=`<span class="bg-amber-200 text-amber-900 px-1 rounded">${k}(${cachedInventory[k].stock})</span>`; } });
-            document.getElementById("stock-alert-items").innerHTML = stockHtml;
-            document.getElementById("stock-alert-banner").style.display = low ? "block" : "none";
-
-            // 2. 24h Orders
+            if(userRole === 'guest') return;
+            
             const now = new Date();
-            let staleHtml = ""; let staleCount = 0;
+            let staleHtml = ""; 
+            let staleCount = 0;
+            
             cachedOrders.forEach(o => {
                 if(o.status === 'pending') {
-                    const diffHours = (now - o.timestamp.toDate()) / (1000 * 60 * 60);
+                    const orderDate = o.timestamp.toDate();
+                    const diffHours = Math.abs(now - orderDate) / 36e5; // Convert ms to hours
                     if(diffHours >= 24) {
                         staleCount++;
-                        staleHtml += `<div class="flex justify-between items-center bg-white/50 p-1.5 rounded border border-red-200">
-                            <span><b>${o.orderId}</b> - ${o.clientName} (${o.clientPhone})</span>
-                            <button onclick="window.forceCancelStale('${o.orderId}')" class="bg-red-600 text-white px-2 py-0.5 rounded shadow">Ακύρωση & Αποδέσμευση</button>
+                        staleHtml += `<div class="flex flex-col sm:flex-row justify-between sm:items-center bg-white/60 dark:bg-gray-800 p-2 rounded border border-red-200 dark:border-red-900 gap-2">
+                            <span><b>[${o.orderId}]</b> ${o.clientName} (${o.clientPhone}) - ${diffHours.toFixed(0)} ώρες</span>
+                            <button onclick="window.updateOrderStatus('${o.orderId}', 'cancelled')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow text-[10px] uppercase font-bold">Ακύρωση & Επιστροφή Στοκ</button>
                         </div>`;
                     }
                 }
             });
+            
             document.getElementById("stale-orders-list").innerHTML = staleHtml;
             document.getElementById("stale-orders-banner").style.display = staleCount > 0 ? "flex" : "none";
         };
 
-        window.forceCancelStale = async (id) => {
-            if(!confirm("Οριστική ακύρωση λόγω παρόδου 24ώρου;")) return;
-            await window.updateOrderStatus(id, 'cancelled', true);
-        };
-
-        // --- PUBLIC STORE ---
+        // --- GUEST STOREFRONT & CHECKOUT ---
         function renderPublicStorefront() {
-            const grid = document.getElementById("public-products-grid"); grid.innerHTML = "";
+            const grid = document.getElementById("public-products-grid"); 
+            grid.innerHTML = "";
+            
             Object.keys(cachedInventory).sort().forEach(name => {
                 const p = cachedInventory[name];
                 if (p.status === 'active' && p.stock > 0) {
-                    const price = parseFloat(p.price||0).toFixed(2);
+                    const price = parseFloat(p.price || 0).toFixed(2);
                     grid.innerHTML += `
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 flex flex-col justify-between hover:shadow-lg transition">
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex flex-col justify-between hover:shadow-lg transition">
                             <h3 class="font-bold text-sm">${name}</h3>
-                            <p class="text-xs text-green-500 font-bold mt-1">Άμεσα Διαθέσιμο</p>
+                            <p class="text-[10px] text-green-600 dark:text-green-400 font-bold mt-1">Άμεσα Διαθέσιμο</p>
                             <div class="mt-3 flex justify-between items-center">
                                 <span class="font-black text-lg">${price}€</span>
-                                <button onclick="window.startCheckout('${btoa(unescape(encodeURIComponent(name))).replace(/=/g, "")}')" class="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Αγορά 🛒</button>
+                                <button onclick="window.startCheckout('${btoa(unescape(encodeURIComponent(name))).replace(/=/g, "")}')" class="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-blue-700 transition">Αγορά 🛒</button>
                             </div>
                         </div>`;
                 }
@@ -438,7 +463,8 @@
 
         window.startCheckout = (id) => {
             const name = Object.keys(cachedInventory).find(k => btoa(unescape(encodeURIComponent(k))).replace(/=/g, "") === id);
-            if(!name) return; const item = cachedInventory[name];
+            if(!name) return; 
+            const item = cachedInventory[name];
             
             document.getElementById("checkout-section").classList.remove("hidden");
             document.getElementById("checkout-item-name").innerText = name;
@@ -446,90 +472,127 @@
             document.getElementById("checkout-qty").max = item.stock;
             document.getElementById("checkout-qty").value = 1;
             
-            if(item.vinted_link) { document.getElementById("opt-vinted").disabled = false; document.getElementById("opt-vinted").innerText = "🛍️ Vinted (Ασφαλής Συναλλαγή)"; } 
-            else { document.getElementById("opt-vinted").disabled = true; document.getElementById("opt-vinted").innerText = "🛍️ Vinted (Μη Διαθέσιμο)"; document.getElementById("cust-payment").value = "bank"; }
+            if(item.vinted_link && item.vinted_link.trim() !== "") { 
+                document.getElementById("opt-vinted").disabled = false; 
+                document.getElementById("opt-vinted").innerText = "🛍️ Vinted (Δωρεάν Μεταφορικά)"; 
+            } else { 
+                document.getElementById("opt-vinted").disabled = true; 
+                document.getElementById("opt-vinted").innerText = "🛍️ Vinted (Μη Διαθέσιμο)"; 
+                document.getElementById("cust-payment").value = "bank"; 
+            }
             
             window.calculateTotal();
             document.getElementById("checkout-section").scrollIntoView({ behavior: 'smooth' });
         };
 
         window.calculateTotal = () => {
-            const p = parseFloat(document.getElementById("checkout-unit-price").innerText);
+            const unitPrice = parseFloat(document.getElementById("checkout-unit-price").innerText);
             let qty = parseInt(document.getElementById("checkout-qty").value);
-            const max = parseInt(document.getElementById("checkout-qty").max);
+            const maxQty = parseInt(document.getElementById("checkout-qty").max);
             
-            if(qty > max) { qty = max; document.getElementById("checkout-qty").value = max; }
+            if(qty > maxQty) { qty = maxQty; document.getElementById("checkout-qty").value = maxQty; }
             if(qty < 1 || isNaN(qty)) { qty = 1; document.getElementById("checkout-qty").value = 1; }
             
-            const sub = p * qty;
+            const subtotal = unitPrice * qty;
             const payMethod = document.getElementById("cust-payment").value;
-            const shipping = payMethod === 'vinted' ? 0 : 3.50; // Standard shipping 3.50€
+            const shipping = (payMethod === 'vinted') ? 0.00 : 3.50; 
             
-            document.getElementById("summary-sub").innerText = sub.toFixed(2);
+            document.getElementById("summary-sub").innerText = subtotal.toFixed(2);
             document.getElementById("summary-ship").innerText = shipping.toFixed(2);
-            document.getElementById("summary-total").innerText = (sub + shipping).toFixed(2) + "€";
+            document.getElementById("summary-total").innerText = (subtotal + shipping).toFixed(2) + "€";
         };
+        
         window.updatePaymentUI = () => window.calculateTotal();
 
         window.submitOnlineOrder = async () => {
             const model = document.getElementById("checkout-item-name").innerText;
             const qty = parseInt(document.getElementById("checkout-qty").value);
             const total = parseFloat(document.getElementById("summary-total").innerText);
+            
             const name = document.getElementById("cust-fullname").value.trim();
             const phone = document.getElementById("cust-phone").value.trim();
             const address = document.getElementById("cust-address").value.trim();
             const city = document.getElementById("cust-city").value.trim();
+            const paymentMethod = document.getElementById("cust-payment").value;
             
-            if(!name || !phone || !address || !city) { alert("Συμπληρώστε όλα τα πεδία!"); return; }
+            if(!name || !phone || !address || !city) { 
+                alert("Παρακαλώ συμπληρώστε όλα τα απαραίτητα πεδία!"); 
+                return; 
+            }
 
+            // Create Unique Order ID
             const orderId = Math.random().toString(36).substring(2,6).toUpperCase() + String(Date.now()).slice(-6);
             
+            // Save to Firebase
             await setDoc(doc(db, "orders", orderId), {
-                orderId, clientName: name, clientPhone: phone, address: address + ", " + city + ", GR",
-                model, qty, price: total, paymentMethod: document.getElementById("cust-payment").value,
-                status: 'pending', timestamp: new Date(),
+                orderId, 
+                clientName: name, 
+                clientPhone: phone, 
+                address: `${address}, ${city}, GR`,
+                model, 
+                qty, 
+                price: total, 
+                paymentMethod,
+                status: 'pending', 
+                timestamp: new Date(),
                 dateLabel: new Date().toLocaleDateString('el-GR') + " " + new Date().toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'})
             });
 
-            // Δημιουργία UI Επιτυχίας με Copy Button
+            // Update UI to Success & Copy Option
             document.getElementById("checkout-section").innerHTML = `
                 <div class="text-center py-6">
                     <div class="text-5xl mb-4">🎉</div>
                     <h3 class="text-xl font-black text-green-600 mb-2">Η Παραγγελία σας Καταχωρήθηκε!</h3>
-                    <p class="text-sm text-gray-600 mb-4">Για την οριστικοποίηση, παρακαλούμε καταθέστε το ποσό <b>${total}€</b> αναγράφοντας ως αιτιολογία τον παρακάτω κωδικό εντός 24 ωρών.</p>
-                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl flex items-center justify-center gap-3 w-max mx-auto border-2 border-dashed border-gray-300">
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Για την ολοκλήρωση, παρακαλούμε καταθέστε το ποσό <b>${total}€</b> αναγράφοντας ως αιτιολογία τον παρακάτω κωδικό, εντός 24 ωρών.</p>
+                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-3 w-max mx-auto border-2 border-dashed border-gray-300 dark:border-gray-500">
                         <span id="final-copy-id" class="text-2xl font-mono font-black tracking-widest">${orderId}</span>
-                        <button onclick="navigator.clipboard.writeText('${orderId}'); alert('Ο κωδικός αντεγράφη!')" class="bg-blue-100 text-blue-700 p-2 rounded-lg text-xs hover:bg-blue-200">📋 Copy</button>
+                        <button onclick="navigator.clipboard.writeText('${orderId}'); alert('Ο κωδικός αντεγράφη επιτυχώς!');" class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 p-2 rounded-lg text-xs hover:bg-blue-200 font-bold transition">📋 Αντιγραφή</button>
                     </div>
-                    <button onclick="window.location.reload()" class="mt-6 text-sm text-blue-600 underline">Επιστροφή στην αρχική</button>
+                    <p class="text-[10px] text-gray-400 mt-4">Μπορείτε να δείτε τους τρόπους κατάθεσης στο κάτω μέρος της σελίδας.</p>
+                    <button onclick="window.location.reload()" class="mt-6 text-sm text-blue-600 dark:text-blue-400 underline">Επιστροφή στην Αρχική</button>
                 </div>
             `;
         };
 
-        // --- SECURE GUEST TRACKING ---
+        // --- GUEST ORDER TRACKING (Ασφαλές) ---
         window.trackOrder = async () => {
             const id = document.getElementById("track-order-id").value.trim().toUpperCase();
             const phone = document.getElementById("track-order-phone").value.trim();
-            if(!id || !phone) { alert("Απαιτείται ο Κωδικός και το Τηλέφωνο επικοινωνίας για λόγους ασφαλείας."); return; }
-
-            const res = document.getElementById("track-result"); res.classList.remove("hidden"); res.innerHTML = "Αναζήτηση...";
             
-            // Direct fetch (Firebase rules must allow read to 'orders' or specific conditions)
-            const snap = await getDoc(doc(db, "orders", id));
-            if(!snap.exists() || snap.data().clientPhone !== phone) {
-                res.innerHTML = `<span class="text-red-500 font-bold">❌ Λάθος Στοιχεία ή η παραγγελία δεν βρέθηκε.</span>`; return;
+            if(!id || !phone) { 
+                alert("Απαιτείται ο Κωδικός ΚΑΙ το Τηλέφωνο επικοινωνίας για λόγους ασφαλείας."); 
+                return; 
             }
+
+            const res = document.getElementById("track-result"); 
+            res.classList.remove("hidden"); 
+            res.innerHTML = "Αναζήτηση...";
             
-            const o = snap.data();
-            let b=""; if(o.status==='pending') b="⏳ Αναμονή"; else if(o.status==='confirmed') b="✅ Επιβεβαιώθηκε"; else if(o.status==='dispatched') b="📦 Απεστάλη"; else if(o.status==='delivered') b="🏠 Παραδόθηκε"; else b="❌ Ακυρώθηκε";
-            
-            res.innerHTML = `
-                <p><b>📦 ${o.qty}x ${o.model}</b> | Σύνολο: ${o.price}€</p>
-                <p class="mt-2 text-sm bg-gray-200 dark:bg-gray-700 p-1.5 rounded inline-block font-bold">${b}</p>
-            `;
+            try {
+                const snap = await getDoc(doc(db, "orders", id));
+                if(!snap.exists() || snap.data().clientPhone !== phone) {
+                    res.innerHTML = `<span class="text-red-500 font-bold">❌ Λάθος Στοιχεία ή η παραγγελία δεν βρέθηκε.</span>`; 
+                    return;
+                }
+                
+                const o = snap.data();
+                let statusBadge = ""; 
+                if(o.status === 'pending') statusBadge = "⏳ Αναμονή"; 
+                else if(o.status === 'confirmed') statusBadge = "✅ Επιβεβαιώθηκε"; 
+                else if(o.status === 'dispatched') statusBadge = "📦 Απεστάλη"; 
+                else if(o.status === 'delivered') statusBadge = "🏠 Παραδόθηκε"; 
+                else statusBadge = "❌ Ακυρώθηκε";
+                
+                res.innerHTML = `
+                    <p><b>📦 ${o.qty}x ${o.model}</b> | Σύνολο: ${parseFloat(o.price).toFixed(2)}€</p>
+                    <p class="mt-2 text-sm bg-gray-200 dark:bg-gray-700 p-1.5 rounded inline-block font-bold">${statusBadge}</p>
+                `;
+            } catch(e) {
+                res.innerHTML = `<span class="text-red-500">Σφάλμα αναζήτησης.</span>`;
+            }
         };
 
-        // --- TAB MANAGEMENT ---
+        // --- ADMIN: TAB MANAGEMENT ---
         window.switchTab = (id) => {
             document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
             document.querySelectorAll(".tab-btn").forEach(el => el.className = "tab-btn px-4 py-2 font-bold text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800");
@@ -537,58 +600,89 @@
             document.getElementById(`btn-${id}`).className = "tab-btn active px-4 py-2 font-bold text-xs rounded-lg bg-blue-600 text-white shadow-sm";
         };
 
-        // --- SMART ACCOUNTING ORDER STATUS LOGIC ---
-        window.updateOrderStatus = async (orderId, newStatus, isForce = false) => {
+        // --- ADMIN: SMART STATUS & ACCOUNTING ---
+        window.updateOrderStatus = async (orderId, newStatus) => {
             const oRef = doc(db, "orders", orderId);
-            const snap = await getDoc(oRef); if(!snap.exists()) return;
-            const o = snap.data(); const old = o.status; const model = o.model; const qty = o.qty || 1;
+            const snap = await getDoc(oRef); 
+            if(!snap.exists()) return;
+            
+            const o = snap.data(); 
+            const oldStatus = o.status; 
+            const model = o.model; 
+            const qty = parseInt(o.qty || 1);
 
-            if (newStatus === 'confirmed' && old === 'pending') {
-                if(cachedInventory[model].stock < qty) { alert("Ανεπαρκές απόθεμα!"); return; }
-                cachedInventory[model].stock -= qty; cachedInventory[model].sold += qty; cachedInventory[model].sold_profit += parseFloat(o.price);
+            // Logic: Confirming a Pending Order -> Deduct Stock, Add Profit, Log
+            if (newStatus === 'confirmed' && oldStatus === 'pending') {
+                if(!cachedInventory[model] || cachedInventory[model].stock < qty) { 
+                    alert("Σφάλμα: Ανεπαρκές απόθεμα για επιβεβαίωση!"); 
+                    return; 
+                }
+                // Update Inventory
+                cachedInventory[model].stock -= qty; 
+                cachedInventory[model].sold = (cachedInventory[model].sold || 0) + qty; 
+                cachedInventory[model].sold_profit = (cachedInventory[model].sold_profit || 0) + parseFloat(o.price);
                 await setDoc(invRef, cachedInventory);
-                await addDoc(collection(db,"transactions"),{timestamp:new Date(),timeLabel:new Date().toLocaleString('el-GR'),type:"Πώληση (E-Shop)",model,qty,price:o.price,reference:o.clientName});
                 
-                // Add to Client Directory
-                if(!cachedClients[o.clientName]) cachedClients[o.clientName] = {name:o.clientName, phone:o.clientPhone, status:'active', history:[]};
+                // Add Transaction Log
+                await addDoc(collection(db,"transactions"), {
+                    timestamp: new Date(),
+                    timeLabel: new Date().toLocaleString('el-GR'),
+                    type: "Πώληση (E-Shop)",
+                    model, qty, price: o.price, reference: o.clientName
+                });
+                
+                // Add to Client History Directory
+                if(!cachedClients[o.clientName]) cachedClients[o.clientName] = {name: o.clientName, phone: o.clientPhone, status: 'active', history: []};
+                if(!cachedClients[o.clientName].history) cachedClients[o.clientName].history = [];
                 cachedClients[o.clientName].history.push(`[${orderId}] Αγορά ${model} (${o.price}€)`);
-                await setDoc(dirRef, {clients:cachedClients, suppliers:cachedSuppliers});
+                await setDoc(dirRef, {clients: cachedClients, suppliers: cachedSuppliers});
             } 
-            else if (newStatus === 'cancelled' && old === 'confirmed') {
-                // Ανάκληση Αποθέματος & Χρημάτων
-                cachedInventory[model].stock += qty; cachedInventory[model].sold -= qty; cachedInventory[model].sold_profit -= parseFloat(o.price);
-                await setDoc(invRef, cachedInventory);
-                await addDoc(collection(db,"transactions"),{timestamp:new Date(),timeLabel:new Date().toLocaleString('el-GR'),type:"Ακύρωση & Επιστροφή",model,qty,price:-o.price,reference:o.clientName});
+            // Logic: Cancelling a Confirmed Order -> Return Stock, Reverse Profit, Log Refund
+            else if (newStatus === 'cancelled' && oldStatus === 'confirmed') {
+                if(cachedInventory[model]) {
+                    cachedInventory[model].stock += qty; 
+                    cachedInventory[model].sold -= qty; 
+                    cachedInventory[model].sold_profit -= parseFloat(o.price);
+                    await setDoc(invRef, cachedInventory);
+                }
+                
+                await addDoc(collection(db,"transactions"), {
+                    timestamp: new Date(),
+                    timeLabel: new Date().toLocaleString('el-GR'),
+                    type: "Ακύρωση & Επιστροφή",
+                    model, qty, price: -Math.abs(o.price), reference: o.clientName
+                });
             }
+            // Logic: Cancelling a Pending Order -> Only update status, nothing else to revert.
 
+            // Update Status on Firebase
             await setDoc(oRef, { status: newStatus }, { merge: true });
-            if(!isForce) alert("Ενημερώθηκε επιτυχώς.");
         };
 
-        // --- RENDERERS ---
+        // --- ADMIN: RENDERERS (Live Search Active) ---
         window.renderOrdersTable = () => {
             const filterStat = document.getElementById("filter-order-status").value;
             const txt = document.getElementById("live-search-orders").value.toLowerCase();
             let html = "";
             
             cachedOrders.forEach(o => {
-                if(filterStat!=='all' && o.status!==filterStat) return;
+                if(filterStat !== 'all' && o.status !== filterStat) return;
                 if(txt && !(o.orderId.toLowerCase().includes(txt) || o.clientName.toLowerCase().includes(txt) || o.clientPhone.includes(txt))) return;
                 
                 html += `
-                    <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-[11px]">
+                    <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 text-[11px]">
                         <td class="p-2 font-mono font-bold">${o.orderId}<br><span class="text-[9px] text-gray-400">${o.dateLabel}</span></td>
                         <td class="p-2"><b>${o.clientName}</b><br><span class="text-gray-400">${o.clientPhone}</span></td>
                         <td class="p-2"><b>${o.qty}x</b> ${o.model}<br><b>${parseFloat(o.price).toFixed(2)}€</b> (${o.paymentMethod})</td>
                         <td class="p-2 flex items-center gap-2">
-                            <select onchange="window.updateOrderStatus('${o.orderId}', this.value)" class="p-1 border rounded bg-white dark:bg-gray-700">
+                            <select onchange="window.updateOrderStatus('${o.orderId}', this.value)" class="p-1 border rounded bg-white dark:bg-gray-700 w-full sm:w-auto">
                                 <option value="pending" ${o.status==='pending'?'selected':''}>⏳ Αναμονή</option>
                                 <option value="confirmed" ${o.status==='confirmed'?'selected':''}>✅ Επιβεβαιώθηκε</option>
                                 <option value="dispatched" ${o.status==='dispatched'?'selected':''}>📦 Απεστάλη</option>
                                 <option value="delivered" ${o.status==='delivered'?'selected':''}>🏠 Παραδόθηκε</option>
                                 <option value="cancelled" ${o.status==='cancelled'?'selected':''}>❌ Ακυρώθηκε</option>
                             </select>
-                            ${(o.status==='pending' || o.status==='confirmed') ? `<button onclick="window.updateOrderStatus('${o.orderId}', 'cancelled')" class="bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200" title="Άμεση Ακύρωση">❌</button>` : ''}
+                            ${(o.status === 'pending' || o.status === 'confirmed') ? `<button onclick="window.updateOrderStatus('${o.orderId}', 'cancelled')" class="bg-red-100 dark:bg-red-900/30 text-red-600 px-2 py-1 rounded hover:bg-red-200" title="Άμεση Ακύρωση">❌</button>` : ''}
                         </td>
                     </tr>`;
             });
@@ -596,14 +690,17 @@
         };
 
         window.renderLogs = () => {
-            const type = document.getElementById("filter-tx-type").value;
-            const text = document.getElementById("search-tx-text").value.toLowerCase();
+            const txt = document.getElementById("live-search-logs").value.toLowerCase();
             let h = "";
+            
             rawLogs.forEach(tx => {
-                if(type !== 'all' && !tx.type.includes(type)) return;
                 const str = `${tx.model} ${tx.reference} ${tx.type}`.toLowerCase();
-                if(text && !str.includes(text)) return;
-                h += `<div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50 border text-[10px] flex justify-between"><div><b>${tx.type}</b>: ${tx.qty}x ${tx.model}<br><span class="text-gray-400">${tx.timeLabel} • ${tx.reference}</span></div><span class="font-bold">${tx.price}€</span></div>`;
+                if(txt && !str.includes(txt)) return;
+                
+                h += `<div class="p-2 rounded bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-700 text-[10px] flex justify-between items-center hover:bg-gray-100 transition">
+                        <div><b>${tx.type}</b>: ${tx.qty}x ${tx.model}<br><span class="text-gray-400">${tx.timeLabel} • ${tx.reference}</span></div>
+                        <span class="font-bold text-sm ${tx.price < 0 ? 'text-red-500' : ''}">${parseFloat(tx.price).toFixed(2)}€</span>
+                      </div>`;
             });
             document.getElementById("transactions-container").innerHTML = h;
         };
@@ -611,28 +708,71 @@
         window.renderAdminInventory = () => {
              const txt = document.getElementById("live-search-inventory").value.toLowerCase();
              let h = "";
+             
              Object.keys(cachedInventory).forEach(k => {
                  if(txt && !k.toLowerCase().includes(txt)) return;
                  const i = cachedInventory[k];
-                 h += `<div class="p-3 border rounded-xl bg-white dark:bg-gray-800 text-xs shadow-sm">
-                        <div class="flex justify-between border-b pb-1 mb-2 font-bold"><span>📱 ${k}</span> <span class="${i.stock<3?'text-red-500':'text-green-500'}">Στοκ: ${i.stock}</span></div>
-                        <p>Τιμή: ${i.price}€ | Πωλήσεις: ${i.sold}τμχ</p>
+                 if(i.status === 'deleted') return; // Ignore visually deleted
+                 
+                 h += `<div class="p-3 border dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-xs shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between border-b dark:border-gray-700 pb-1 mb-2 font-bold">
+                            <span>📱 ${k}</span> 
+                            <span class="${i.stock < 3 ? 'text-red-500 bg-red-100 px-1 rounded' : 'text-green-500'}">Στοκ: ${i.stock}</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">Λιανική: <b>${parseFloat(i.price||0).toFixed(2)}€</b></p>
+                        <p class="text-gray-600 dark:text-gray-300">Πωλήσεις: ${i.sold || 0}τμχ</p>
                       </div>`;
              });
              document.getElementById("inventory-container").innerHTML = h;
         };
 
-        window.renderDirectories = () => { /* Similar logic to v11, omitted repetition */ };
+        window.renderDirectories = () => {
+            const clientTxt = document.getElementById("search-client-text").value.toLowerCase();
+            const suppTxt = document.getElementById("search-supplier-text").value.toLowerCase();
+            
+            let ch = ""; let sh = "";
+            
+            Object.values(cachedClients).forEach(c => {
+                if(c.status !== 'active') return;
+                if(clientTxt && !(c.name.toLowerCase().includes(clientTxt) || c.phone.includes(clientTxt))) return;
+                ch += `<div class="p-2 border-b dark:border-gray-700 text-xs flex justify-between"><span><b>${c.name}</b><br><span class="text-gray-400">📞 ${c.phone}</span></span></div>`;
+            });
+            
+            Object.values(cachedSuppliers).forEach(s => {
+                if(s.status !== 'active') return;
+                if(suppTxt && !(s.name.toLowerCase().includes(suppTxt) || s.phone.includes(suppTxt))) return;
+                sh += `<div class="p-2 border-b dark:border-gray-700 text-xs flex justify-between"><span><b>${s.name}</b><br><span class="text-gray-400">📞 ${s.phone || 'N/A'}</span></span></div>`;
+            });
+            
+            document.getElementById("clients-list-container").innerHTML = ch || "<p class='text-xs text-gray-400'>Κανένας πελάτης.</p>";
+            document.getElementById("suppliers-list-container").innerHTML = sh || "<p class='text-xs text-gray-400'>Κανένας προμηθευτής.</p>";
+        };
 
-        // --- NEW FRIENDLY BATCH IMPORTER ---
-        window.resetBatchForm = () => { document.getElementById("batch-rows-container").innerHTML = ""; window.addBatchRow(); };
+        // --- ADMIN: FRIENDLY BATCH IMPORTER ---
+        window.resetBatchForm = () => { 
+            document.getElementById("batch-rows-container").innerHTML = ""; 
+            window.addBatchRow(); 
+        };
+        
         window.addBatchRow = () => {
             const type = document.getElementById("batch-type").value;
-            const div = document.createElement("div"); div.className = "flex gap-2 batch-row";
+            const div = document.createElement("div"); 
+            div.className = "flex gap-2 batch-row mb-2";
+            
             if(type === 'products') {
-                div.innerHTML = `<input type="text" placeholder="Όνομα Προϊόντος" class="w-2/5 p-2 border rounded text-xs val-name"><input type="number" placeholder="Στοκ" class="w-1/5 p-2 border rounded text-xs val-stock"><input type="number" step="0.01" placeholder="Τιμή €" class="w-1/5 p-2 border rounded text-xs val-price"><input type="text" placeholder="Vinted URL (opt)" class="w-1/5 p-2 border rounded text-xs val-vinted">`;
+                div.innerHTML = `
+                    <input type="text" placeholder="Όνομα Προϊόντος" class="w-2/5 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs val-name">
+                    <input type="number" placeholder="Στοκ" class="w-1/5 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs val-stock">
+                    <input type="number" step="0.01" placeholder="Τιμή €" class="w-1/5 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs val-price">
+                    <input type="text" placeholder="Vinted URL (opt)" class="w-1/5 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs val-vinted">
+                    <button onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+                `;
             } else {
-                div.innerHTML = `<input type="text" placeholder="Ονοματεπώνυμο / Εταιρεία" class="w-1/2 p-2 border rounded text-xs val-name"><input type="text" placeholder="Τηλέφωνο ${type==='suppliers'?'(Προαιρετικό)':''}" class="w-1/2 p-2 border rounded text-xs val-phone">`;
+                div.innerHTML = `
+                    <input type="text" placeholder="Ονοματεπώνυμο / Εταιρεία" class="w-1/2 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs val-name">
+                    <input type="text" placeholder="Τηλέφωνο ${type==='suppliers'?'(Προαιρετικό)':''}" class="w-1/2 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs val-phone">
+                    <button onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+                `;
             }
             document.getElementById("batch-rows-container").appendChild(div);
         };
@@ -643,35 +783,49 @@
             let count = 0;
 
             rows.forEach(r => {
-                const name = r.querySelector(".val-name").value.trim();
+                const nameInput = r.querySelector(".val-name");
+                if(!nameInput) return;
+                const name = nameInput.value.trim();
                 if(!name) return;
                 
                 if(type === 'products') {
-                    const st = parseInt(r.querySelector(".val-stock").value)||0;
-                    const pr = parseFloat(r.querySelector(".val-price").value)||0;
+                    const st = parseInt(r.querySelector(".val-stock").value) || 0;
+                    const pr = parseFloat(r.querySelector(".val-price").value) || 0;
                     const vt = r.querySelector(".val-vinted").value.trim();
-                    if(!cachedInventory[name]) cachedInventory[name] = {sold:0, total_cost:0, sold_profit:0, status:'active'};
-                    cachedInventory[name].stock = st; cachedInventory[name].price = pr; cachedInventory[name].vinted_link = vt;
-                } else if(type === 'clients') {
+                    
+                    if(!cachedInventory[name]) {
+                        cachedInventory[name] = {sold: 0, total_cost: 0, sold_profit: 0, status: 'active'};
+                    }
+                    cachedInventory[name].stock = st; 
+                    cachedInventory[name].price = pr; 
+                    cachedInventory[name].vinted_link = vt;
+                } 
+                else if(type === 'clients') {
                     const ph = r.querySelector(".val-phone").value.trim() || "Μη Καταχωρημένο";
-                    cachedClients[name] = {name, phone:ph, status:'active', history:[]};
-                } else {
+                    if(!cachedClients[name]) cachedClients[name] = {name, phone: ph, status: 'active', history: []};
+                } 
+                else {
                     const ph = r.querySelector(".val-phone").value.trim() || "Μη Καταχωρημένο";
-                    cachedSuppliers[name] = {name, phone:ph, status:'active', history:[]};
+                    if(!cachedSuppliers[name]) cachedSuppliers[name] = {name, phone: ph, status: 'active', history: []};
                 }
                 count++;
             });
 
             if(count > 0) {
-                if(type === 'products') await setDoc(invRef, cachedInventory);
-                else await setDoc(dirRef, {clients:cachedClients, suppliers:cachedSuppliers});
-                alert(`✅ Εισήχθησαν ${count} εγγραφές επιτυχώς!`);
+                if(type === 'products') {
+                    await setDoc(invRef, cachedInventory);
+                } else {
+                    await setDoc(dirRef, {clients: cachedClients, suppliers: cachedSuppliers});
+                }
+                alert(`✅ Εισήχθησαν/Ενημερώθηκαν ${count} εγγραφές επιτυχώς!`);
                 window.resetBatchForm();
+            } else {
+                alert("Δεν βρέθηκαν έγκυρα δεδομένα για εισαγωγή.");
             }
         };
 
-        // Αρχική ετοιμασία batch UI
-        setTimeout(() => window.resetBatchForm(), 1000);
+        // Initialize empty batch UI on start
+        setTimeout(() => window.resetBatchForm(), 500);
 
     </script>
 </body>
