@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraNovaTD Storefront & ERP v11.0</title>
-    <!-- Tailwind CSS v4 -->
+    <title>AuraNovaTD Storefront & ERP v12.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         html.dark { background-color: #111827 !important; color: #f9fafb !important; }
@@ -14,20 +13,24 @@
     </style>
     <script>
         // Απόλυτος έλεγχος Light/Dark Mode κατά το boot
-        if (localStorage.getItem('theme') === 'dark') {
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
         } else {
             document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
         }
     </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen flex flex-col">
 
-    <!-- 🌐 NAVBAR (Κοινή για όλους) -->
     <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2" onclick="window.location.reload()" class="cursor-pointer">
-                <span class="text-2xl">✨</span>
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xs shadow border border-white/20 overflow-hidden">
+                    <img src="logo.png" alt="AN" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" class="w-full h-full object-cover">
+                    <span style="display:none;" class="tracking-tighter">AN</span>
+                </div>
                 <div>
                     <span class="font-black text-lg tracking-wider text-gray-900 dark:text-white">AuraNova<span class="text-blue-600">TD</span></span>
                     <span id="role-badge" class="ml-2 text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold px-2 py-0.5 rounded-full uppercase">Επισκέπτης</span>
@@ -36,92 +39,98 @@
             
             <div class="flex items-center gap-2">
                 <button onclick="window.toggleTheme()" id="theme-btn" class="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs">🌙</button>
-                
-                <!-- Κουμπί Login/Logout -->
                 <button onclick="window.openLoginModal()" id="nav-login-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3 py-2 rounded-xl transition-colors">🔐 Σύνδεση</button>
                 <button onclick="window.logout()" id="nav-logout-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-xl transition-colors">Έξοδος</button>
             </div>
         </div>
     </nav>
 
-    <!-- 🔐 MODAL ΣΥΝΔΕΣΗΣ ΧΡΗΣΤΗ (STAFF / ADMIN) -->
-    <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-200 dark:border-gray-700 relative">
-            <button onclick="window.closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-sm">✕</button>
-            <div class="text-center mb-4">
-                <span class="text-3xl">🔑</span>
-                <h3 class="text-lg font-bold mt-2">Σύνδεση στο ERP</h3>
-                <p class="text-xs text-gray-400">Για διαχειριστές και υπαλλήλους</p>
-            </div>
-            <div class="space-y-3">
-                <input type="email" id="email-input" placeholder="Email" class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
-                <input type="password" id="password-input" placeholder="Κωδικός" class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
-            </div>
-            <button onclick="window.login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs mt-4 transition-colors">Είσοδος στο Σύστημα</button>
-            <p id="login-error" class="text-red-500 text-xs mt-2 text-center hidden font-semibold"></p>
-        </div>
-    </div>
-
-    <!-- 🚨 ALERT BANNER ΧΑΜΗΛΟΥ ΣΤΟΚ (Μόνο για User/Admin) -->
-    <div id="stock-alert-banner" class="max-w-6xl mx-auto w-full px-4 mt-4 hidden">
-        <div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-200 p-3 rounded-xl text-xs flex flex-col gap-1 shadow-sm">
+    <div id="stock-alert-banner" class="max-w-6xl mx-auto w-full px-4 mt-4 hidden space-y-2">
+        <div id="stock-danger-zone" class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-200 p-3 rounded-xl text-xs flex flex-col gap-1 shadow-sm hidden">
             <span class="font-bold flex items-center gap-1">⚠️ ΕΙΔΟΠΟΙΗΣΗ ΑΠΟΘΗΚΗΣ: Χαμηλό απόθεμα στα παρακάτω προϊόντα:</span>
             <div id="stock-alert-items" class="flex flex-wrap gap-2 font-mono font-bold mt-1"></div>
         </div>
+        <div id="order-delay-zone" class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 p-3 rounded-xl text-xs flex flex-col gap-1 shadow-sm hidden">
+            <span class="font-bold flex items-center gap-1">⏳ ΕΙΔΟΠΟΙΗΣΗ ΡΟΗΣ: Εκκρεμείς παραγγελίες άνω των 24 ωρών χωρίς επιβεβαίωση:</span>
+            <div id="order-delay-items" class="flex flex-col gap-1 font-mono mt-1 divide-y divide-amber-200/30"></div>
+        </div>
     </div>
 
-    <!-- 🏠 ΚΥΡΙΟ ΠΕΡΙΕΧΟΜΕΝΟ -->
-    <main class="flex-grow max-w-6xl mx-auto w-full p-4">
+    <main class="flex-grow max-w-6xl mx-auto w-full p-4 space-y-6">
 
-        <!-- ========================================== -->
-        <!-- 🛒 1. ΕΝΟΤΗΤΑ ΕΠΙΣΚΕΠΤΗ (STOREFRONT)        -->
-        <!-- ========================================== -->
         <div id="guest-view" class="space-y-6">
             
-            <!-- Μηχανή Αναζήτησης Παραγγελίας & Banner Πληροφοριών -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-2 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 rounded-2xl shadow-md flex flex-col justify-between">
-                    <div>
-                        <h2 class="text-xl font-black">Καλώς ήρθατε στην AuraNovaTD</h2>
-                        <p class="text-xs text-blue-100 mt-1 max-w-md">Premium αξεσουάρ κινητής τηλεφωνίας και privacy screen protectors. Άμεση αποστολή σε όλη την Ελλάδα.</p>
-                    </div>
-                    <div class="mt-4 bg-white/10 p-2.5 rounded-xl border border-white/10 text-[11px] space-y-1">
-                        <p><b>💰 Τράπεζα:</b> GR7601720000005100000012345 (ΤΣΑΓΚΑΔΑΚΗΣ ΔΗΜΗΤΡΙΟΣ)</p>
-                        <p><b>📱 IRIS Payments:</b> 6992915453</p>
-                    </div>
+            <div class="w-full h-48 sm:h-64 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 relative shadow-md overflow-hidden flex items-center justify-center p-6 border border-gray-200 dark:border-gray-800">
+                <img src="banner.jpg" alt="AuraNovaTD Banner" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-40">
+                <div class="relative z-10 text-center space-y-2 max-w-xl">
+                    <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-white drop-shadow">AuraNova<span class="text-blue-500">TD</span> Storefront</h1>
+                    <p class="text-xs sm:text-sm text-gray-200 font-medium drop-shadow-sm">Premium αξεσουάρ κινητής τηλεφωνίας και privacy screen protectors. Άμεση αποστολή σε όλη την Ελλάδα.</p>
                 </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                <!-- Tracking Παραγγελίας -->
                 <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex flex-col justify-between">
                     <div>
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">🔍 Αναζήτηση Παραγγελίας</h3>
-                        <div class="flex gap-2">
-                            <input type="text" id="track-order-id" placeholder="Κωδικός π.χ. A1B2260610" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono">
-                            <button onclick="window.trackOrder()" class="bg-blue-600 text-white font-bold px-3 py-2 rounded-lg text-xs hover:bg-blue-700">Αναζήτηση</button>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">🔍 Ασφαλής Αναζήτηση Παραγγελίας</h3>
+                        <div class="space-y-2">
+                            <input type="text" id="track-order-id" placeholder="Κωδικός π.χ. A1B2260610" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono uppercase">
+                            <input type="tel" id="track-order-phone" placeholder="Αριθμός Κινητού Τηλεφώνου" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 font-mono">
+                            <button onclick="window.trackOrder()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg text-xs hover:bg-blue-700 transition-colors">Αναζήτηση Παραγγελίας</button>
                         </div>
                     </div>
                     <div id="track-result" class="mt-3 p-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hidden"></div>
                 </div>
-            </div>
 
-            <!-- Δημόσιος Κατάλογος Προϊόντων -->
-            <div>
-                <h2 class="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">🛍️ Διαθέσιμα Προϊόντα Storefront</h2>
-                <div id="public-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Dynamic Grid -->
+                <div class="md:col-span-2 space-y-2">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 overflow-hidden">
+                        <button onclick="document.getElementById('acc-finance').classList.toggle('hidden')" class="w-full p-3 text-left font-bold text-xs uppercase bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center text-gray-700 dark:text-gray-200">
+                            <span>🏦 Διαθέσιμοι Τρόποι Πληρωμής & Λογαριασμοί</span>
+                            <span class="text-[10px]">▼</span>
+                        </button>
+                        <div id="acc-finance" class="p-4 text-[11px] space-y-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20">
+                            <p><b>💰 Τράπεζα Πειραιώς:</b> <span class="font-mono font-bold select-all">GR7601720000005100000012345</span></p>
+                            <p><b>👤 Δικαιούχος:</b> ΤclassnameΑΓΚΑΔΑΚΗΣ ΔΗΜΗΤΡΙΟΣ</p>
+                            <hr class="border-gray-200 dark:border-gray-700 my-1">
+                            <p><b>📱 IRIS Payments (Κινητό):</b> <span class="font-mono font-bold select-all">6992915453</span></p>
+                            <p><b>👤 Όνομα IRIS:</b> ΔΗΜΗΤΡΙΟΣ ΤΣΑΓΚΑΔΑΚΗΣ</p>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 overflow-hidden">
+                        <button onclick="document.getElementById('acc-terms').classList.toggle('hidden')" class="w-full p-3 text-left font-bold text-xs uppercase bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center text-gray-700 dark:text-gray-200">
+                            <span>⚖️ Όροι Χρήσης & Πολιτική Συναλλαγών</span>
+                            <span class="text-[10px]">▼</span>
+                        </button>
+                        <div id="acc-terms" class="p-4 text-[11px] space-y-3 border-t border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400 hidden">
+                            <div>
+                                <p class="font-semibold text-gray-800 dark:text-gray-300">1. Διαδικασία Παραγγελιών & Προθεσμία</p>
+                                <p>Ωστε να ολοκληρωθεί η παραγγελία σας, απαραίτητη προϋπόθεση είναι η πληρωμή του αντίστοιχου ποσού εντός αποκλειστικής προθεσμίας <b>24 ωρών</b>, διαφορετικά η παραγγελία θα ακυρώνεται αυτόματα από το σύστημα. Παρακαλούμε όπως αναγράψετε τον μοναδικό Κωδικό Παραγγελίας στα σχόλια της κατάθεσής σας.</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800 dark:text-gray-300">2. Πολιτική Ακυρώσεων & Επιστροφών</p>
+                                <p>Η ακύρωση της παραγγελίας είναι εφικτή αποκλειστικά όσο η κατάσταση εμφανίζεται ως «Εκκρεμεί» ή «Επιβεβαιώθηκε». Από τη στιγμή που η παραγγελία μεταβληθεί σε «Απεστάλη» (παραδοθεί στο Courier), καμία ακύρωση δεν γίνεται δεκτή. Σε περίπτωση έγκυρης ακύρωσης, η επιστροφή των χρημάτων εκτελείται <b>εντός τριών (3) εργάσιμων ημερών</b> από τη στιγμή της ακύρωσης στον λογαριασμό προέλευσης.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Φόρμα Checkout (Ανοίγει όταν επιλεγεί προϊόν) -->
+            <div>
+                <h2 class="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">🛍️ Διαθέσιμα Προϊόντα Storefront</h2>
+                <div id="public-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+            </div>
+
             <div id="checkout-section" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border-2 border-blue-500 hidden max-w-xl mx-auto">
                 <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-3 mb-4">
                     <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">🛒 Ολοκλήρωση της Παραγγελίας σας</h3>
                     <button onclick="document.getElementById('checkout-section').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xs">Ακύρωση ✕</button>
                 </div>
                 
-                <p class="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200 p-2.5 rounded-lg font-medium mb-4">
-                    📦 Επιλεγμένο Προϊόν: <span id="checkout-item-name" class="font-bold underline"></span>
-                </p>
+                <div class="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200 rounded-lg text-xs space-y-1 mb-4 font-medium">
+                    <p>📦 Επιλεγμένο Προϊόν: <span id="checkout-item-name" class="font-bold underline"></span></p>
+                    <p>💰 Αρχική Τιμή Μονάδος: <span id="checkout-item-unit-price" class="font-bold"></span>€</p>
+                </div>
 
                 <div class="space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -134,9 +143,25 @@
                             <input type="tel" id="cust-phone" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
                         </div>
                     </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-gray-500 uppercase">Διεύθυνση Αποστολής & Τ.Κ. *</label>
-                        <input type="text" id="cust-address" placeholder="Οδός, Αριθμός, Πόλη, ΤΚ" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="text-[11px] font-bold text-gray-500 uppercase">Διεύθυνση Αποστολής & Αριθμός *</label>
+                            <input type="text" id="cust-address" placeholder="Οδός και Αριθμός" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 uppercase">Ποσότητα *</label>
+                            <select id="cust-qty" onchange="window.recalcCheckoutPrice()" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700 font-bold"></select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 uppercase">Πόλη *</label>
+                            <input type="text" id="cust-city" placeholder="Πόλη" class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 uppercase">Χώρα *</label>
+                            <input type="text" id="cust-country" value="Ελλάδα" disabled class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed font-bold">
+                        </div>
                     </div>
                     <div>
                         <label class="text-[11px] font-bold text-gray-500 uppercase">Τρόπος Πληρωμής *</label>
@@ -147,8 +172,7 @@
                         </select>
                     </div>
                     
-                    <!-- Δυναμικές Οδηγίες Πληρωμής -->
-                    <div id="payment-instructions" class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl text-xs text-amber-900 dark:text-amber-200 font-medium"></div>
+                    <div id="payment-instructions" class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl text-xs text-amber-900 dark:text-amber-200 font-medium space-y-1"></div>
 
                     <button onclick="window.submitOnlineOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-xs mt-4 uppercase tracking-wider transition-colors shadow">
                         🚀 Ολοκλήρωση Αγοράς & Έκδοση Κωδικού
@@ -157,12 +181,8 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 🛠️ 2. ΕΝΟΤΗΤΑ ΔΙΑΧΕΙΡΙΣΗΣ (USER & ADMIN PANEL) -->
-        <!-- ========================================== -->
         <div id="management-view" class="hidden space-y-6">
             
-            <!-- Tabs Πλοήγησης Διαχείρισης -->
             <div class="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2 overflow-x-auto">
                 <button onclick="window.switchTab('tab-inventory')" id="btn-tab-inventory" class="tab-btn active px-3 py-1.5 font-bold text-xs rounded-lg bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-gray-300">📦 Αποθήκη & Κινήσεις</button>
                 <button onclick="window.switchTab('tab-orders')" id="btn-tab-orders" class="tab-btn px-3 py-1.5 font-bold text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">📋 Παραγγελίες E-Shop</button>
@@ -170,10 +190,8 @@
                 <button onclick="window.switchTab('tab-admin')" id="btn-tab-admin" class="tab-btn hidden px-3 py-1.5 font-bold text-xs rounded-lg text-amber-600 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900">⚙️ Admin Panel Override</button>
             </div>
 
-            <!-- TAB 2A: LIVE INVENTORY & LOGS -->
             <div id="tab-inventory" class="tab-content active space-y-4">
                 
-                <!-- Μηχανή Αναζήτησης / Φίλτρα Κινήσεων -->
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="text-[10px] uppercase font-bold text-gray-400">Φίλτρο Τύπου Κίνησης</label>
@@ -185,18 +203,16 @@
                         </select>
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="text-[10px] uppercase font-bold text-gray-400">Αναζήτηση σε Ιστορικό (Πελάτης/Προϊόν)</label>
-                        <input type="text" id="search-tx-text" oninput="window.filterTransactions()" placeholder="Πληκτρολογήστε για φιλτράρισμα..." class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
+                        <label class="text-[10px] uppercase font-bold text-gray-400">Real-time Αναζήτηση σε Ιστορικό (Πελάτης/Προϊόν)</label>
+                        <input type="text" id="search-tx-text" oninput="window.filterTransactions()" placeholder="Πληκτρολογήστε για άμεσο φιλτράρισμα..." class="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg mt-1 bg-gray-50 dark:bg-gray-700">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Κύρια Λίστα Αποθήκης -->
                     <div class="md:col-span-2 space-y-4">
                         <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">📦 Κατάσταση Αποθεμάτων ERP</h3>
                         <div id="inventory-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                     </div>
-                    <!-- Live Logs -->
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 h-fit space-y-3">
                         <h3 class="text-sm font-bold border-b border-gray-100 dark:border-gray-700 pb-2">📜 ERP Live Log (Τελευταίες 10)</h3>
                         <div id="transactions-container" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
@@ -204,13 +220,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2B: ΠΙΝΑΚΑΣ ΠΑΡΑΓΓΕΛΙΩΝ E-SHOP -->
             <div id="tab-orders" class="tab-content space-y-4">
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-wrap gap-3 items-center justify-between">
                     <h3 class="text-sm font-bold">📋 Διαχείριση Ροής Παραγγελιών (Order Pipeline)</h3>
                     <select id="filter-order-status" onchange="window.renderOrdersTable()" class="p-2 text-xs border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700">
                         <option value="all">Όλες οι καταστάσεις</option>
-                        <option value="pending">⏳ Αναμονή Πληρωμής</option>
+                        <option value="pending">⏳ Εκκρεμεί</option>
                         <option value="confirmed">✅ Επιβεβαιώθηκε</option>
                         <option value="dispatched">📦 Απεστάλη</option>
                         <option value="delivered">🏠 Παραλήφθηκε</option>
@@ -224,7 +239,7 @@
                                 <tr>
                                     <th class="p-3">Κωδικός / Ημ.</th>
                                     <th class="p-3">Στοιχεία Πελάτη</th>
-                                    <th class="p-3">Προϊόν</th>
+                                    <th class="p-3">Προϊόν & Ποσ.</th>
                                     <th class="p-3">Πληρωμή</th>
                                     <th class="p-3">Κατάσταση</th>
                                     <th class="p-3 text-right">Ενέργειες</th>
@@ -236,36 +251,31 @@
                 </div>
             </div>
 
-            <!-- TAB 2C: ΚΑΤΑΛΟΓΟΙ ΣΥΝΕΡΓΑΤΩΝ -->
             <div id="tab-directories" class="tab-content space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Directory Πελατών -->
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="text-xs font-bold uppercase text-blue-600">👥 Κατάλογος Πελατών</h3>
-                            <input type="text" id="search-client-text" oninput="window.renderDirectories()" placeholder="Αναζήτηση..." class="p-1 text-xs border rounded bg-gray-50 dark:bg-gray-700">
+                            <h3 class="text-xs font-bold uppercase text-blue-600">👥 Κατάλογος Πελατών (Live αναζήτηση)</h3>
+                            <input type="text" id="search-client-text" oninput="window.renderDirectories()" placeholder="Αναζήτηση με όνομα/τηλέφωνο..." class="p-1 text-xs border rounded bg-gray-50 dark:bg-gray-700">
                         </div>
-                        <div id="clients-list-container" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
+                        <div id="clients-list-container" class="space-y-2 max-h-[400px] overflow-y-auto"></div>
                     </div>
-                    <!-- Directory Προμηθευτών -->
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="text-xs font-bold uppercase text-purple-600">🏭 Κατάλογος Προμηθευτών</h3>
+                            <h3 class="text-xs font-bold uppercase text-purple-600">🏭 Κατάλογος Προμηθευτών (Live αναζήτηση)</h3>
                             <input type="text" id="search-supplier-text" oninput="window.renderDirectories()" placeholder="Αναζήτηση..." class="p-1 text-xs border rounded bg-gray-50 dark:bg-gray-700">
                         </div>
-                        <div id="suppliers-list-container" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
+                        <div id="suppliers-list-container" class="space-y-2 max-h-[400px] overflow-y-auto"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2D: ADVANCED ADMIN OVERRIDE PANEL -->
             <div id="tab-admin" class="tab-content space-y-6">
                 
-                <!-- 📊 ΓΕΝΙΚΟ DASHBOARD -->
                 <div class="bg-amber-950 text-white rounded-2xl shadow-md p-5 border border-amber-900">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">📊 Γενικά Στατιστικά Επιχείρησης (Καθολικά)</h2>
-                        <span class="text-[10px] bg-amber-800 text-amber-200 px-2 py-0.5 rounded font-mono font-bold">v11.0 Enterprise</span>
+                        <span class="text-[10px] bg-amber-800 text-amber-200 px-2 py-0.5 rounded font-mono font-bold">v12.0 Enterprise</span>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                         <div class="bg-amber-900/40 p-3 rounded-xl border border-amber-800">
@@ -287,15 +297,13 @@
                     </div>
                 </div>
 
-                <!-- GLOBAL DB ENGINE SEARCH -->
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border-2 border-amber-500 shadow-sm space-y-2">
                     <h3 class="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 flex items-center gap-1">🔍 Καθολική Μηχανή Αναζήτησης Βάσης Δεδομένων (Global Master Search)</h3>
-                    <input type="text" id="global-search-input" oninput="window.runGlobalSearch()" placeholder="Αναζητήστε τα πάντα: Κωδικούς παραγγελιών, Πελάτες, Τηλέφωνα, Διευθύνσεις, Προϊόντα..." class="w-full p-2 text-xs border border-amber-300 dark:border-amber-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <input type="text" id="global-search-input" oninput="window.runGlobalSearch()" placeholder="Αναζητήστε κατά την πληκτρολόγηση: Κωδικούς παραγγελιών, Πελάτες, Τηλέφωνα, Διευθύνσεις, Προϊόντα..." class="w-full p-2 text-xs border border-amber-300 dark:border-amber-700 rounded-lg bg-gray-50 dark:bg-gray-700">
                     <div id="global-search-results" class="space-y-1 max-h-[250px] overflow-y-auto mt-2"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Προσθήκη / Επεξεργασία Προϊόντων -->
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
                         <h3 class="text-xs font-bold text-amber-700 uppercase tracking-wider">➕ Προσθήκη / Ενημέρωση Κωδικού</h3>
                         <div class="space-y-2 text-xs">
@@ -308,76 +316,58 @@
                         </div>
                     </div>
 
-                    <!-- Batch Entities Importer -->
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
-                        <h3 class="text-xs font-bold text-amber-700 uppercase tracking-wider">📦 Μαζική Εισαγωγή Δεδομένων (Batch JSON Importer)</h3>
+                        <h3 class="text-xs font-bold text-amber-700 uppercase tracking-wider">📦 Φιλική Μαζική Εισαγωγή Δεδομένων (User-Friendly Importer)</h3>
                         <div class="space-y-2 text-xs">
                             <select id="batch-import-type" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700">
-                                <option value="products">Προϊόντα (Products)</option>
-                                <option value="clients">Πελάτες (Clients)</option>
-                                <option value="suppliers">Προμηθευτές (Suppliers)</option>
+                                <option value="products">Προϊόντα (Όνομα, Τιμή, Στοκ, Vinted Link)</option>
+                                <option value="clients">Πελάτες (Όνομα, Τηλέφωνο)</option>
+                                <option value="suppliers">Προμηθευτές (Όνομα, Τηλέφωνο)</option>
                             </select>
-                            <textarea id="batch-json-area" rows="4" placeholder='Παράδειγμα: [{"name":"Γιώργος", "phone":"6912345678"}]' class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 font-mono text-[11px]"></textarea>
-                            <button onclick="window.executeBatchImport()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700">Εκτέλεση Μαζικής Εισαγωγής</button>
+                            <p class="text-[10px] text-gray-400">Εισάγετε μία εγγραφή ανά γραμμή διαχωρίζοντας τα πεδία με ερωτηματικό (;)</p>
+                            <textarea id="batch-json-area" rows="4" placeholder="Παράδειγμα Προϊόντος: iPhone 16 Privacy;15.50;10;https://vinted.gr/...&#10;Παράδειγμα Επαφής: Γιώργος Παπαδόπουλος;6912345678" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 font-mono text-[11px]"></textarea>
+                            <button onclick="window.executeBatchImport()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors">Εκτέλεση Εισαγωγής</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Χειροκίνητη Προσθήκη Συνεργατών -->
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
-                    <h3 class="text-xs font-bold text-amber-700 uppercase tracking-wider">➕ Καταχώρηση Νέου Πελάτη / Προμηθευτή</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-                        <select id="new-entity-type" class="p-2 border rounded bg-gray-50 dark:bg-gray-700">
-                            <option value="client">Πελάτης</option>
-                            <option value="supplier">Προμηθευτής</option>
-                        </select>
-                        <input type="text" id="new-entity-name" placeholder="Όνομα / Εταιρεία" class="p-2 border rounded bg-gray-50 dark:bg-gray-700 sm:col-span-2">
-                        <input type="text" id="new-entity-phone" placeholder="Τηλέφωνο επικοινωνίας" class="p-2 border rounded bg-gray-50 dark:bg-gray-700">
-                    </div>
-                    <button onclick="window.addEntityManual()" class="w-full bg-amber-700 text-white font-bold py-2 rounded-lg text-xs hover:bg-amber-800">Προσθήκη στον Κατάλογο</button>
-                </div>
-
-                <!-- 🔒 ΚΡΥΦΟ ADMIN LOG -->
                 <div class="bg-amber-900 text-amber-100 p-4 rounded-xl space-y-3">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300">🛠️ Ιστορικό Διαχειριστή (Admin Actions Log - 10 τελευταίες)</h3>
                     <div id="admin-transactions-container" class="space-y-1.5 text-[11px]"></div>
                 </div>
             </div>
         </div>
-
-        <!-- ========================================== -->
-        <!-- 📜 3. ΟΡΟΙ ΧΡΗΣΗΣ (ΕΜΦΑΝΕΙΣ ΣΕ ΟΛΟΥΣ)     -->
-        <!-- ========================================== -->
-        <div class="mt-12 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400 space-y-4">
-            <h3 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b pb-2 text-sm flex items-center gap-1.5">⚖️ Όροι Χρήσης & Πολιτική Συναλλαγών AuraNovaTD</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 leading-relaxed">
-                <div class="space-y-2">
-                    <p class="font-semibold text-gray-800 dark:text-gray-300">1. Διαδικασία Παραγγελιών & Επαλήθευση</p>
-                    <p>Κάθε ηλεκτρονική παραγγελία καταχωρείται στο κεντρικό WMS σύστημα σε κατάσταση αναμονής. Ο πελάτης υποχρεούται να καταθέσει το ακριβές αντίτιμο εντός 48 ωρών μέσω e-Banking ή IRIS. <b>Απαραίτητη προϋπόθεση για την έγκριση της παραγγελίας είναι η αναγραφή του μοναδικού 10ψήφιου Κωδικού Παραγγελίας στα σχόλια/αιτιολογία της κατάθεσης.</b></p>
-                </div>
-                <div class="space-y-2">
-                    <p class="font-semibold text-gray-800 dark:text-gray-300">2. Πολιτική Ακυρώσεων & Επιστροφών</p>
-                    <p>Η ακύρωση της παραγγελίας από την πλευρά του αγοραστή είναι εφικτή **αποκλειστικά και μόνο** όσο η κατάσταση της παραγγελίας εμφανίζεται ως «Αναμονή Πληρωμής» ή «Επιβεβαιώθηκε». **Από τη στιγμή που η παραγγελία μεταβληθεί σε «Απεστάλη» (παράδοση στην εταιρεία ταχυμεταφορών - Courier), καμία ακύρωση δεν γίνεται δεκτή.**</p>
-                    <p>Σε περίπτωση έγκυρης ακύρωσης, η επιστροφή των χρημάτων εκτελείται εντός τριών (3) εργάσιμων ημερών στον τραπεζικό λογαριασμό προέλευσης.</p>
-                </div>
-            </div>
-        </div>
     </main>
 
-    <!--  footer -->
+    <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-200 dark:border-gray-700 relative">
+            <button onclick="window.closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-sm">✕</button>
+            <div class="text-center mb-4">
+                <span class="text-3xl">🔑</span>
+                <h3 class="text-lg font-bold mt-2">Σύνδεση στο ERP</h3>
+                <p class="text-xs text-gray-400">Για διαχειριστές και υπαλλήλους</p>
+            </div>
+            <div class="space-y-3">
+                <input type="email" id="email-input" placeholder="Email" class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
+                <input type="password" id="password-input" placeholder="Κωδικός" class="w-full p-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
+            </div>
+            <button onclick="window.login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs mt-4 transition-colors">Είσοδος στο Σύστημα</button>
+            <p id="login-error" class="text-red-500 text-xs mt-2 text-center hidden font-semibold"></p>
+        </div>
+    </div>
+
     <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-12 text-center text-xs text-gray-400">
         <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex justify-center gap-6 font-medium text-gray-500 dark:text-gray-400">
-                <a href="#" class="hover:text-blue-500 transition-colors">🛍️ Vinted Store</a>
-                <a href="#" class="hover:text-pink-500 transition-colors">📸 Instagram</a>
-                <a href="#" class="hover:text-blue-600 transition-colors">👥 Facebook</a>
+                <a href="https://www.vinted.gr/member/3152909033-auranovatd" target="_blank" class="hover:text-blue-500 transition-colors">🛍️ Vinted Store</a>
+                <a href="https://www.instagram.com/auranovatd?igsh=MTdxZHAyYXNjaTc4ZQ==" target="_blank" class="hover:text-pink-500 transition-colors">📸 Instagram</a>
+                <a href="https://www.facebook.com/share/1B2Fbq72T6/" target="_blank" class="hover:text-blue-600 transition-colors">👥 Facebook</a>
                 <a href="mailto:auranovatd@gmail.com" class="hover:text-red-500 transition-colors">📧 auranovatd@gmail.com</a>
             </div>
             <p>© 2026 AuraNovaTD. All Rights Reserved. Designed for Logistics & Hypertrophy Operations.</p>
         </div>
     </footer>
 
-    <!-- Firebase Core & App Logics -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -403,15 +393,15 @@
         let cachedOrders = [];
         let cachedClients = {};
         let cachedSuppliers = {};
-        let userRole = 'guest'; // guest, staff, admin
-        const ADMIN_EMAIL = "dtsagkadakis@gmail.com";
+        let userRole = 'guest';
+        const ADMIN_EMAIL = "auranovatd@gmail.com";
         const MIN_SAFETY_STOCK = 3;
 
         // Firebase References
         const inventoryDocRef = doc(db, "wms", "inventory");
         const dirDocRef = doc(db, "wms", "directories");
 
-        // --- ☀️ 🌙 BULLETPROOF THEME TOGGLE ENGINE ---
+        // --- ☀️ 🌙 BULLETPROOF THEME TOGGLE ENGINE (REFIXED) ---
         window.toggleTheme = function() {
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
@@ -423,9 +413,11 @@
                 document.getElementById("theme-btn").innerText = "☀️";
             }
         };
-        // Αρχικός συγχρονισμός εικονιδίου
+        // Συγχρονισμός εικονιδίου κατά το boot
         if (localStorage.getItem('theme') === 'dark') {
             document.getElementById("theme-btn").innerText = "☀️";
+        } else {
+            document.getElementById("theme-btn").innerText = "🌙";
         }
 
         // --- 🔐 AUTHENTICATION & ACCESS CONTROL (RBAC) ---
@@ -436,7 +428,6 @@
                 document.getElementById("nav-logout-btn").classList.remove("hidden");
                 document.getElementById("management-view").classList.remove("hidden");
                 
-                // Ενημέρωση UI βάσει ρόλου
                 document.getElementById("role-badge").innerText = userRole;
                 if (userRole === 'admin') {
                     document.getElementById("btn-tab-admin").classList.remove("hidden");
@@ -456,6 +447,7 @@
         });
 
         window.openLoginModal = () => document.getElementById("login-modal").classList.remove("hidden");
+        window.closeLoginModal = () => document.getElementById("login-modal").classList.hidden = true; 
         window.closeLoginModal = () => document.getElementById("login-modal").classList.add("hidden");
 
         window.login = async () => {
@@ -479,18 +471,16 @@
 
         // --- 💾 DATA LOADER ENGINE ---
         async function loadInitialData() {
-            // Live Inventory Listener
             onSnapshot(inventoryDocRef, (snap) => {
                 if (snap.exists()) cachedInventory = snap.data();
                 renderPublicStorefront();
                 if (userRole !== 'guest') {
                     renderAdminInventory();
                     calculateGlobalStats();
-                    checkSafetyStocks();
+                    checkSafetyStocksAndDelays();
                 }
             });
 
-            // Master Directories Listener
             onSnapshot(dirDocRef, (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
@@ -500,14 +490,15 @@
                 if (userRole !== 'guest') renderDirectories();
             });
 
-            // Orders Pipeline Listener
             onSnapshot(query(collection(db, "orders"), orderBy("timestamp", "desc")), (snap) => {
                 cachedOrders = [];
                 snap.forEach(d => cachedOrders.push(d.data()));
-                if (userRole !== 'guest') renderOrdersTable();
+                if (userRole !== 'guest') {
+                    renderOrdersTable();
+                    checkSafetyStocksAndDelays();
+                }
             });
 
-            // Live Transactions Listener
             onSnapshot(query(collection(db, "transactions"), orderBy("timestamp", "desc"), limit(10)), (snap) => {
                 const container = document.getElementById("transactions-container");
                 if(!container) return;
@@ -521,7 +512,6 @@
                 });
             });
 
-            // Admin Logs Listener
             onSnapshot(query(collection(db, "admin_logs"), orderBy("timestamp", "desc"), limit(10)), (snap) => {
                 const container = document.getElementById("admin-transactions-container");
                 if(!container) return;
@@ -536,6 +526,69 @@
             });
         }
 
+        // --- 🤖 PIPELINE & STOCK CONSOLE CONTEXT ENGINE ---
+        function checkSafetyStocksAndDelays() {
+            if (userRole === 'guest') return;
+
+            let generalTrigger = false;
+
+            // 1. Έλεγχος Αποθέματος
+            const stockList = document.getElementById("stock-alert-items");
+            const stockZone = document.getElementById("stock-danger-zone");
+            stockList.innerHTML = "";
+            let stockTrigger = false;
+
+            Object.keys(cachedInventory).forEach(k => {
+                const item = cachedInventory[k];
+                if(item.status === 'active' && parseInt(item.stock) < MIN_SAFETY_STOCK) {
+                    stockTrigger = true;
+                    generalTrigger = true;
+                    const span = document.createElement("span");
+                    span.className = "bg-red-200 text-red-800 px-1.5 py-0.5 rounded border border-red-300";
+                    span.innerText = `${k} (${item.stock} τμχ)`;
+                    stockList.appendChild(span);
+                }
+            });
+            if(stockTrigger) stockZone.classList.remove("hidden");
+            else stockZone.classList.add("hidden");
+
+            // 2. Έλεγχος Παραγγελιών > 24 ωρών χωρίς επιβεβαίωση
+            const orderList = document.getElementById("order-delay-items");
+            const orderZone = document.getElementById("order-delay-zone");
+            orderList.innerHTML = "";
+            let orderTrigger = false;
+
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+
+            cachedOrders.forEach(o => {
+                if(o.status === 'pending') {
+                    let orderTime = 0;
+                    if(o.timestamp && o.timestamp.seconds) {
+                        orderTime = o.timestamp.seconds * 1000;
+                    } else if (o.timestamp instanceof Date) {
+                        orderTime = o.timestamp.getTime();
+                    } else {
+                        orderTime = new Date(o.timestamp).getTime();
+                    }
+
+                    if(orderTime < oneDayAgo) {
+                        orderTrigger = true;
+                        generalTrigger = true;
+                        const div = document.createElement("div");
+                        div.className = "py-1 flex flex-wrap justify-between items-center text-[11px]";
+                        div.innerHTML = `<span>🆔 Κωδικός: <b>${o.orderId}</b> | Πελάτης: <b>${o.clientName}</b> (${o.clientPhone}) | Προϊόν: ${o.qty}x ${o.model}</span> <span class="bg-amber-200 text-amber-900 px-1 rounded font-bold">Καθυστέρηση</span>`;
+                        orderList.appendChild(div);
+                    }
+                }
+            });
+
+            if(orderTrigger) orderZone.classList.remove("hidden");
+            else orderZone.classList.add("hidden");
+
+            if(generalTrigger) document.getElementById("stock-alert-banner").classList.remove("hidden");
+            else document.getElementById("stock-alert-banner").classList.add("hidden");
+        }
+
         // --- 🛒 PUBLIC STOREFRONT LOGIC ---
         function renderPublicStorefront() {
             const grid = document.getElementById("public-products-grid");
@@ -544,7 +597,6 @@
 
             Object.keys(cachedInventory).sort().forEach(name => {
                 const p = cachedInventory[name];
-                // Φίλτρο Επισκέπτη: Μόνο active και stock > 0
                 if (p.status === 'active' && parseInt(p.stock) > 0) {
                     counter++;
                     const card = document.createElement("div");
@@ -573,11 +625,20 @@
             const name = Object.keys(cachedInventory).find(k => btoa(unescape(encodeURIComponent(k))).replace(/=/g, "") === safeId);
             if(!name) return;
             
+            const item = cachedInventory[name];
             document.getElementById("checkout-section").classList.remove("hidden");
             document.getElementById("checkout-item-name").innerText = name;
+            document.getElementById("checkout-item-unit-price").innerText = parseFloat(item.price || 0).toFixed(2);
             
+            // Δυναμικός πληθυσμός διαθέσιμων τεμαχίων βάσει πραγματικού στοκ
+            const qtySelect = document.getElementById("cust-qty");
+            qtySelect.innerHTML = "";
+            const maxAvailable = Math.min(parseInt(item.stock || 1), 10); // έως 10 τεμάχια ή το μέγιστο στοκ
+            for(let i = 1; i <= maxAvailable; i++) {
+                qtySelect.innerHTML += `<option value="${i}">${i} τμχ</option>`;
+            }
+
             // Έλεγχος Vinted Link
-            const item = cachedInventory[name];
             const optVinted = document.getElementById("opt-vinted");
             if (item.vinted_link && item.vinted_link.trim() !== "") {
                 optVinted.disabled = false;
@@ -589,23 +650,46 @@
                     document.getElementById("cust-payment").value = 'bank';
                 }
             }
-            window.updatePaymentInstructions();
+            window.recalcCheckoutPrice();
             document.getElementById("checkout-section").scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.recalcCheckoutPrice = () => {
+            window.updatePaymentInstructions();
         };
 
         window.updatePaymentInstructions = () => {
             const method = document.getElementById("cust-payment").value;
             const pane = document.getElementById("payment-instructions");
             const currentItem = document.getElementById("checkout-item-name").innerText;
-            const price = parseFloat(cachedInventory[currentItem]?.price || 0).toFixed(2);
+            const qty = parseInt(document.getElementById("cust-qty").value) || 1;
+            
+            const unitPrice = parseFloat(cachedInventory[currentItem]?.price || 0);
+            const itemsTotalPrice = unitPrice * qty;
+            
+            // Υπολογισμός μεταφορικών βάσει καναλιού υπηρεσίας
+            let shippingCost = 0;
+            if (method === 'bank' || method === 'iris') {
+                shippingCost = 3.00; // Σταθερά μεταφορικά AuraNovaTD για απευθείας καταθέσεις
+            }
+
+            const finalTotal = itemsTotalPrice + shippingCost;
+
+            let priceBreakdownHtml = `
+                <div class="bg-black/5 dark:bg-white/5 p-2 rounded-lg space-y-0.5 font-mono mb-2 border border-black/5">
+                    <p>Αξία Προϊόντων: ${itemsTotalPrice.toFixed(2)}€ (${qty}x)</p>
+                    <p>Κόστος Μεταφορικών: ${method==='vinted'?'Βάσει Vinted': shippingCost.toFixed(2)+'€'}</p>
+                    <p class="font-bold text-sm text-blue-600 dark:text-blue-400">Τελικό Ποσό Πληρωμής: ${method==='vinted'?'Βάσει Vinted': finalTotal.toFixed(2)+'€'}</p>
+                </div>
+            `;
 
             if (method === 'bank') {
-                pane.innerHTML = `ℹ️ <b>Οδηγίες Κατάθεσης:</b> Μεταφέρετε το ποσό των <b>${price}€</b> στον λογαριασμό Πειραιώς: <span class="font-mono bg-white/50 px-1 rounded">GR7601720000005100000012345</span>.<br>Δικαιούχος: <b>ΤΣΑΓΚΑΔΑΚΗΣ ΔΗΜΗΤΡΙΟΣ</b>.<br><span class="text-red-600 font-bold">⚠️ ΠΡΟΣΟΧΗ: Θα πρέπει να συμπληρώσετε τον Κωδικό Παραγγελίας στα σχόλια της κατάθεσης που θα εκδοθεί στο επόμενο βήμα!</span>`;
+                pane.innerHTML = priceBreakdownHtml + `<div>ℹ️ <b>Οδηγίες Κατάθεσης:</b> Μεταφέρετε το ποσό των <b>${finalTotal.toFixed(2)}€</b> στον λογαριασμό Πειραιώς: <span class="font-mono bg-white dark:bg-gray-900 px-1 rounded select-all font-bold">GR7601720000005100000012345</span>.<br>Δικαιούχος: <b>ΤΣΑΓΚΑΔΑΚΗΣ ΔΗΜΗΤΡΙΟΣ</b>.<br><span class="text-red-600 dark:text-red-400 font-bold">⚠️ ΠΡΟΣΟΧΗ: Απαραίτητη προϋπόθεση είναι η συμπλήρωση του Κωδικού Παραγγελίας στα σχόλια της κατάθεσης!</span></div>`;
             } else if (method === 'iris') {
-                pane.innerHTML = `ℹ️ <b>Οδηγίες IRIS:</b> Αποστείλετε <b>${price}€</b> μέσω της εφαρμογής της τράπεζάς σας στο κινητό: <b>6992915453</b>.<br>Όνομα: <b>ΔΗΜΗΤΡΙΟΣ ΤΣΑΓΚΑΔΑΚΗΣ</b>.<br>Στα σχόλια γράψτε τον Κωδικό Παραγγελίας.`;
+                pane.innerHTML = priceBreakdownHtml + `<div>ℹ️ <b>Οδηγίες IRIS:</b> Αποστείλετε <b>${finalTotal.toFixed(2)}€</b> μέσω IRIS στο κινητό: <span class="font-bold select-all">6992915453</span>.<br>Όνομα: <b>ΔΗΜΗΤΡΙΟΣ ΤΣΑΓΚΑΔΑΚΗΣ</b>.<br>Στα σχόλια γράψτε τον Κωδικού Παραγγελίας.</div>`;
             } else if (method === 'vinted') {
-                const link = cachedInventory[currentItem]?.vinted_link || "#";
-                pane.innerHTML = `ℹ️ <b>Οδηγίες Vinted:</b> Μπορείτε να ολοκληρώσετε την αγορά με ασφάλεια μέσω Vinted πατώντας τον παρακάτω σύνδεσμο:<br><a href="${link}" target="_blank" class="text-blue-600 underline font-bold">Μετάβαση στο Vinted Product Link ➔</a>`;
+                const link = cachedInventory[currentItem]?.vinted_link || "https://www.vinted.gr/member/3152909033-auranovatd";
+                pane.innerHTML = priceBreakdownHtml + `<div>ℹ️ <b>Οδηγίες Vinted:</b> Ολοκληρώστε την αγορά με την ασφάλεια και τις παροχές υπηρεσιών του Vinted πατώντας τον σύνδεσμο:<br><a href="${link}" target="_blank" class="text-blue-600 dark:text-blue-400 underline font-bold inline-block mt-1">Μετάβαση στο Vinted Product Link ➔</a></div>`;
             }
         };
 
@@ -614,11 +698,12 @@
             const name = document.getElementById("cust-fullname").value.trim();
             const phone = document.getElementById("cust-phone").value.trim();
             const address = document.getElementById("cust-address").value.trim();
+            const city = document.getElementById("cust-city").value.trim();
+            const qty = parseInt(document.getElementById("cust-qty").value) || 1;
             const payment = document.getElementById("cust-payment").value;
 
-            if(!name || !phone || !address) { alert("❌ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία!"); return; }
+            if(!name || !phone || !address || !city) { alert("❌ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία!"); return; }
 
-            // Παραγωγή 10ψήφιου AlphaNumeric Κωδικού (4 Τυχαία + YYMMDD)
             const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
             let randStr = "";
             for(let i=0; i<4; i++) randStr += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -633,11 +718,12 @@
                 orderId: orderId,
                 clientName: name,
                 clientPhone: phone,
-                address: address,
+                address: `${address}, ${city}, Ελλάδα`,
                 model: model,
-                price: parseFloat(cachedInventory[model].price || 0),
+                qty: qty,
+                price: parseFloat(cachedInventory[model].price || 0) * qty,
                 paymentMethod: payment,
-                status: 'pending', // pending, confirmed, dispatched, delivered, cancelled
+                status: 'pending',
                 trackingId: '',
                 timestamp: now,
                 dateLabel: now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'})
@@ -646,61 +732,79 @@
             try {
                 await setDoc(doc(db, "orders", orderId), orderData);
                 
-                // Ειδοποίηση Web Push / Alert (Προσομοίωση Push Notification)
-                console.log(`Notification sent to Admin device: New Order ${orderId} placed for ${model}`);
-                
-                alert(`🎉 Η ΠΑΡΑΓΓΕΛΙΑ ΚΑΤΑΧΩΡΗΘΗΚΕ ΕΠΙΤΥΧΩΣ!\n\nΜΟΝΑΔΙΚΟΣ ΚΩΔΙΚΟΣ: ${orderId}\n\nΣημειώστε τον κωδικό. Για την ενεργοποίηση της παραγγελίας, πρέπει να πραγματοποιήσετε την κατάθεση αναγράφοντας το ${orderId} ως αιτιολογία.`);
-                
-                // Reset Form
-                document.getElementById("cust-fullname").value = "";
-                document.getElementById("cust-phone").value = "";
-                document.getElementById("cust-address").value = "";
-                document.getElementById("checkout-section").classList.add("hidden");
-                
-                // Αυτόματο track για διευκόλυνση
-                document.getElementById("track-order-id").value = orderId;
-                window.trackOrder();
+                // Δημιουργία UI πλαισίου με επιλογή Copy
+                const checkoutSection = document.getElementById("checkout-section");
+                checkoutSection.innerHTML = `
+                    <div class="text-center space-y-4 py-4">
+                        <span class="text-4xl">🎉</span>
+                        <h3 class="text-lg font-bold text-green-600 dark:text-green-400">Η ΠΑΡΑΓΓΕΛΙΑ ΚΑΤΑΧΩΡΗΘΗΚΕ ΕΠΙΤΥΧΩΣ!</h3>
+                        <p class="text-xs">Κρατήστε τον κωδικό σας. Για να μην ακυρωθεί αυτόματα η παραγγελία, πρέπει να γίνει η κατάθεση εντός 24 ωρών.</p>
+                        
+                        <div class="bg-gray-100 dark:bg-gray-900 p-3 rounded-xl border flex items-center justify-between max-w-xs mx-auto">
+                            <span class="font-mono font-black text-base tracking-wider text-gray-900 dark:text-white" id="generated-order-id">${orderId}</span>
+                            <button onclick="window.copyOrderIdToClipboard()" class="bg-blue-600 text-white font-bold text-[10px] px-2 py-1 rounded hover:bg-blue-700 transition-colors">Copy 📋</button>
+                        </div>
+                        <button onclick="window.location.reload()" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold text-xs px-4 py-2 rounded-xl mt-2">Επιστροφή στο Storefront</button>
+                    </div>
+                `;
             } catch(e) {
                 alert("❌ Σφάλμα κατά την αποθήκευση της παραγγελίας.");
             }
         };
 
-        // --- 🔍 ORDER TRACKING SYSTEM (GUEST ENGINE) ---
+        window.copyOrderIdToClipboard = () => {
+            const idText = document.getElementById("generated-order-id").innerText;
+            navigator.clipboard.writeText(idText);
+            alert("📋 Ο κωδικός αντιγράφηκε στο clipboard!");
+        };
+
+        // --- 🔍 ORDER TRACKING SYSTEM (GUEST ENGINE REFIXED & SECURED) ---
         window.trackOrder = async () => {
             const id = document.getElementById("track-order-id").value.trim().toUpperCase();
+            const phone = document.getElementById("track-order-phone").value.trim();
             const res = document.getElementById("track-result");
-            if(!id) return;
+            
+            if(!id || !phone) {
+                alert("❌ Για λόγους ασφαλείας, απαιτείται τόσο ο κωδικός όσο και το κινητό τηλέφωνο της παραγγελίας!");
+                return;
+            }
 
             res.classList.remove("hidden");
-            res.innerHTML = "🔍 Αναζήτηση...";
+            res.innerHTML = "🔍 Αναζήτηση & Επαλήθευση Ασφαλείας...";
 
             const docSnap = await getDoc(doc(db, "orders", id));
             if(!docSnap.exists()) {
-                res.innerHTML = `<span class="text-red-500 font-bold">❌ Δεν βρέθηκε παραγγελία με αυτόν τον κωδικό.</span>`;
+                res.innerHTML = `<span class="text-red-500 font-bold">❌ Δεν βρέθηκε παραγγελία με αυτά τα στοιχεία.</span>`;
                 return;
             }
 
             const o = docSnap.data();
+            
+            // Έλεγχος ασφαλείας: Σύγκριση τηλεφώνου
+            if (o.clientPhone !== phone) {
+                res.innerHTML = `<span class="text-red-500 font-bold">❌ Τα στοιχεία επαλήθευσης τηλεφώνου δεν είναι σωστά. Πρόσβαση αρνήθηκε.</span>`;
+                return;
+            }
+
             let statusBadge = "";
             let cancelBtn = "";
 
             switch(o.status) {
-                case 'pending': statusBadge = `<span class="bg-amber-100 text-amber-800 p-1 rounded font-bold">⏳ Αναμονή Πληρωμής</span>`; break;
+                case 'pending': statusBadge = `<span class="bg-amber-100 text-amber-800 p-1 rounded font-bold">⏳ Εκκρεμεί Πληρωμή</span>`; break;
                 case 'confirmed': statusBadge = `<span class="bg-green-100 text-green-800 p-1 rounded font-bold">✅ Επιβεβαιώθηκε Πληρωμή</span>`; break;
                 case 'dispatched': statusBadge = `<span class="bg-blue-100 text-blue-800 p-1 rounded font-bold">📦 Απεστάλη με Courier</span>`; break;
                 case 'delivered': statusBadge = `<span class="bg-gray-100 text-gray-800 p-1 rounded font-bold">🏠 Παραλήφθηκε</span>`; break;
                 case 'cancelled': statusBadge = `<span class="bg-red-100 text-red-800 p-1 rounded font-bold">❌ Ακυρώθηκε</span>`; break;
             }
 
-            // Εμφάνιση Κουμπιού Ακύρωσης ΜΟΝΟ αν δεν έχει παραδοθεί στο Courier (pending ή confirmed)
             if(o.status === 'pending' || o.status === 'confirmed') {
-                cancelBtn = `<button onclick="window.guestCancelOrder('${o.orderId}')" class="mt-3 w-full bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-1 rounded transition-colors">❌ Ακύρωση Παραγγελίας</button>`;
+                cancelBtn = `<button onclick="window.guestCancelOrder('${o.orderId}')" class="mt-3 w-full bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-1.5 rounded transition-colors shadow-sm">❌ Ακύρωση Παραγγελίας</button>`;
             }
 
             res.innerHTML = `
-                <div class="space-y-1.5 text-gray-800 dark:text-gray-200">
-                    <p><b>📦 Προϊόν:</b> ${o.model}</p>
-                    <p><b>💰 Ποσό:</b> ${parseFloat(o.price).toFixed(2)}€</p>
+                <div class="space-y-1.5 text-gray-800 dark:text-gray-200 border-t pt-2 mt-2 border-gray-100 dark:border-gray-700">
+                    <p><b>📦 Προϊόν:</b> ${o.qty}x ${o.model}</p>
+                    <p><b>💰 Συνολικό Ποσό:</b> ${parseFloat(o.price).toFixed(2)}€</p>
                     <p><b>📊 Κατάσταση:</b> ${statusBadge}</p>
                     ${o.trackingId ? `<p class="bg-blue-50 dark:bg-blue-950/40 p-1 rounded border border-blue-200 text-blue-700 dark:text-blue-300 font-mono"><b>🚚 Voucher ID:</b> ${o.trackingId}</p>` : ''}
                     <p class="text-[10px] text-gray-400 mt-1">Καταχώρηση: ${o.dateLabel}</p>
@@ -710,8 +814,17 @@
         };
 
         window.guestCancelOrder = async (orderId) => {
-            if(!confirm("⚠️ Είστε σίγουροι ότι επιθυμείτε την ακύρωση της παραγγελίας σας; Η επιστροφή χρημάτων εκτελείται εντός 3 εργάσιμων ημερών.")) return;
+            if(!confirm("⚠️ Είστε σίγουροι ότι επιθυμείτε την ακύρωση της παραγγελίας σας; Η επιστροφή χρημάτων εκτελείται εντός 3 εργάσιμων ημερών από τη στιγμή της ακύρωσης.")) return;
             try {
+                // Λογιστική και αποθεματική αποκατάσταση αν ήταν ήδη "confirmed"
+                const docSnap = await getDoc(doc(db, "orders", orderId));
+                if(docSnap.exists()){
+                    const o = docSnap.data();
+                    if(o.status === 'confirmed') {
+                        await revertInventoryLogistics(o.model, o.qty, o.price, o.clientName, orderId);
+                    }
+                }
+
                 await setDoc(doc(db, "orders", orderId), { status: 'cancelled' }, { merge: true });
                 alert("✅ Η παραγγελία ακυρώθηκε με επιτυχία.");
                 window.trackOrder();
@@ -728,27 +841,6 @@
             document.getElementById(tabId).classList.add("active");
             document.getElementById(`btn-${tabId}`).className = "tab-btn active px-3 py-1.5 font-bold text-xs rounded-lg bg-blue-600 text-white shadow-sm";
         };
-
-        function checkSafetyStocks() {
-            const list = document.getElementById("stock-alert-items");
-            const banner = document.getElementById("stock-alert-banner");
-            list.innerHTML = "";
-            let trigger = false;
-
-            Object.keys(cachedInventory).forEach(k => {
-                const item = cachedInventory[k];
-                if(item.status === 'active' && parseInt(item.stock) < MIN_SAFETY_STOCK) {
-                    trigger = true;
-                    const span = document.createElement("span");
-                    span.className = "bg-red-200 text-red-800 px-1.5 py-0.5 rounded border border-red-300";
-                    span.innerText = `${k} (${item.stock} τμχ)`;
-                    list.appendChild(span);
-                }
-            });
-
-            if(trigger) banner.classList.remove("hidden");
-            else banner.classList.add("hidden");
-        }
 
         function calculateGlobalStats() {
             let tc = 0, tr = 0, ts = 0;
@@ -788,7 +880,6 @@
                         <div>Τιμή: <b>${parseFloat(item.price || 0).toFixed(2)}€</b></div>
                     </div>
                     
-                    <!-- ERP ACTIONS FOR USER/ADMIN -->
                     <div class="space-y-1 pt-2 border-t ${item.status !== 'active' ? 'opacity-30 pointer-events-none' : ''}">
                         <div class="grid grid-cols-3 gap-1">
                             <button onclick="window.triggerTx('${name}', 'restock')" class="bg-blue-600 text-white font-bold p-1 rounded text-[10px]">Αγορά</button>
@@ -802,7 +893,6 @@
                         </div>
                     </div>
 
-                    <!-- ADMIN OVERRIDES FOR STATUS -->
                     ${userRole === 'admin' ? `
                         <div class="flex gap-1 pt-1.5 border-t text-[9px] font-bold">
                             <button onclick="window.setProductStatus('${name}', 'active')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-1 py-0.5 rounded flex-1">Active</button>
@@ -813,7 +903,6 @@
                 `;
                 container.appendChild(div);
 
-                // Populate Entities Dropdown dynamically based on state context
                 setTimeout(() => {
                     const sel = document.getElementById(`tx_entity_${safeId}`);
                     if(sel) {
@@ -873,7 +962,6 @@
                 timestamp: now, timeLabel: timeString, type: logType, model: model, qty: qty, price: price, reference: entityName, user: auth.currentUser.email
             });
 
-            // Καταγραφή στην καρτέλα της επαφής
             if(entityVal.startsWith("C:")) {
                 if(!cachedClients[entityName].history) cachedClients[entityName].history = [];
                 cachedClients[entityName].history.push(`${timeString} - ${logType}: ${qty}x ${model} (${price}€)`);
@@ -898,20 +986,24 @@
 
                 const tr = document.createElement("tr");
                 tr.className = "border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800/40";
+                
+                // Δυναμικές επιλογές ροής βάσει κανόνων (Ακύρωση διαθέσιμη έως και το confirmed)
+                let statusSelectHtml = `
+                    <select onchange="window.updateOrderStatus('${o.orderId}', this.value)" class="p-1 border rounded bg-gray-50 dark:bg-gray-700 text-[11px]">
+                        <option value="pending" ${o.status==='pending'?'selected':''}>⏳ Εκκρεμεί</option>
+                        <option value="confirmed" ${o.status==='confirmed'?'selected':''}>✅ Επιβεβαιώθηκε</option>
+                        <option value="dispatched" ${o.status==='dispatched'?'selected':''}>📦 Απεστάλη</option>
+                        <option value="delivered" ${o.status==='delivered'?'selected':''}>🏠 Παραλήφθηκε</option>
+                        <option value="cancelled" ${o.status==='cancelled'?'selected':''}>❌ Ακυρώθηκε</option>
+                    </select>
+                `;
+
                 tr.innerHTML = `
                     <td class="p-3 font-mono font-bold">${o.orderId}<br><span class="text-[10px] text-gray-400 font-normal">${o.dateLabel}</span></td>
                     <td class="p-3"><b>${o.clientName}</b><br><span class="text-gray-400 text-[11px]">${o.clientPhone} | ${o.address}</span></td>
-                    <td class="p-3 font-medium">${o.model}</td>
+                    <td class="p-3 font-medium">${o.qty || 1}x ${o.model}</td>
                     <td class="p-3 font-bold text-gray-900 dark:text-white">${parseFloat(o.price).toFixed(2)}€<br><span class="text-[9px] uppercase tracking-wider bg-gray-100 dark:bg-gray-700 px-1 rounded text-gray-500">${o.paymentMethod}</span></td>
-                    <td class="p-3">
-                        <select onchange="window.updateOrderStatus('${o.orderId}', this.value)" class="p-1 border rounded bg-gray-50 dark:bg-gray-700 text-[11px]">
-                            <option value="pending" ${o.status==='pending'?'selected':''}>⏳ Εκκρεμεί</option>
-                            <option value="confirmed" ${o.status==='confirmed'?'selected':''}>✅ Επιβεβαιώθηκε</option>
-                            <option value="dispatched" ${o.status==='dispatched'?'selected':''}>📦 Απεστάλη</option>
-                            <option value="delivered" ${o.status==='delivered'?'selected':''}>🏠 Παραλήφθηκε</option>
-                            <option value="cancelled" ${o.status==='cancelled'?'selected':''}>❌ Ακυρώθηκε</option>
-                        </select>
-                    </td>
+                    <td class="p-3">${statusSelectHtml}</td>
                     <td class="p-3 text-right">
                         ${o.status === 'dispatched' || o.status === 'delivered' ? `
                             <input type="text" placeholder="Tracking ID" value="${o.trackingId || ''}" onchange="window.saveTrackingId('${o.orderId}', this.value)" class="p-1 border text-[11px] rounded bg-gray-50 dark:bg-gray-700 w-24 text-center">
@@ -928,48 +1020,66 @@
             if(!snap.exists()) return;
             const orderData = snap.data();
             const oldStatus = orderData.status;
+            const model = orderData.model;
+            const orderQty = parseInt(orderData.qty || 1);
 
-            // Trigger Αυτόματης Κίνησης Πώλησης στο ERP όταν η παραγγελία πάει από 'pending' σε 'confirmed'
+            // 1. ΕΑΝ ΠΑΕΙ ΣΕ CONFIRMED ΑΠΟ PENDING -> Αφαιρούμε από την αποθήκη (Λογιστική επιβεβαίωση)
             if (newStatus === 'confirmed' && oldStatus === 'pending') {
-                const model = orderData.model;
-                if(parseInt(cachedInventory[model].stock) < 1) {
-                    alert("❌ Σφάλμα: Δεν υπάρχει διαθέσιμο στοκ στην αποθήκη για να επιβεβαιωθεί η πώληση!");
+                if(parseInt(cachedInventory[model].stock) < orderQty) {
+                    alert(`❌ Σφάλμα: Δεν υπάρχει επαρκές διαθέσιμο στοκ (${cachedInventory[model].stock} τμχ) για την ποσότητα της παραγγελίας (${orderQty} τμχ)!`);
                     window.renderOrdersTable();
                     return;
                 }
                 
-                // Αφαίρεση από Αποθήκη
-                cachedInventory[model].stock = parseInt(cachedInventory[model].stock) - 1;
-                cachedInventory[model].sold = (parseInt(cachedInventory[model].sold) || 0) + 1;
+                cachedInventory[model].stock = parseInt(cachedInventory[model].stock) - orderQty;
+                cachedInventory[model].sold = (parseInt(cachedInventory[model].sold) || 0) + orderQty;
                 cachedInventory[model].sold_profit = (parseFloat(cachedInventory[model].sold_profit) || 0) + parseFloat(orderData.price);
                 await setDoc(inventoryDocRef, cachedInventory);
 
-                // Εγγραφή Συναλλαγής ERP
                 const now = new Date();
                 const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
                 await addDoc(collection(db, "transactions"), {
-                    timestamp: now, timeLabel: timeString, type: "💰 Πώληση (E-Shop)", model: model, qty: 1, price: parseFloat(orderData.price), reference: orderData.clientName, user: "automation-engine"
+                    timestamp: now, timeLabel: timeString, type: "💰 Πώληση (E-Shop)", model: model, qty: orderQty, price: parseFloat(orderData.price), reference: orderData.clientName, user: "automation-engine"
                 });
 
-                // Αυτόματη Καταχώρηση Πελάτη στο Master Directory & Σύνδεση Κωδικού Παραγγελίας
                 if(!cachedClients[orderData.clientName]) {
                     cachedClients[orderData.clientName] = { name: orderData.clientName, phone: orderData.clientPhone, status: 'active', history: [] };
                 }
                 if(!cachedClients[orderData.clientName].history) cachedClients[orderData.clientName].history = [];
-                cachedClients[orderData.clientName].history.push(`Κωδ. Παραγγελίας: ${orderId} - Αγορά ${model} (${orderData.price}€)`);
+                cachedClients[orderData.clientName].history.push(`Κωδ. Παραγγελίας: ${orderId} - Αγορά ${orderQty}x ${model} (${orderData.price}€)`);
                 await setDoc(dirDocRef, { clients: cachedClients, suppliers: cachedSuppliers });
+            }
+
+            // 2. ΕΑΝ ΑΚΥΡΩΘΕΙ ΕΝΩ ΗΤΑΝ ΗΔΗ CONFIRMED -> Επαναφέρουμε τα αποθέματα και αφαιρούμε τα κέρδη
+            if (newStatus === 'cancelled' && oldStatus === 'confirmed') {
+                await revertInventoryLogistics(model, orderQty, orderData.price, orderData.clientName, orderId);
             }
 
             await setDoc(orderDocRef, { status: newStatus }, { merge: true });
             alert(`✅ Η κατάσταση της παραγγελίας ${orderId} ενημερώθηκε.`);
         };
 
+        async function revertInventoryLogistics(model, qty, price, clientName, orderId) {
+            if(cachedInventory[model]) {
+                cachedInventory[model].stock = (parseInt(cachedInventory[model].stock) || 0) + qty;
+                cachedInventory[model].sold = Math.max(0, (parseInt(cachedInventory[model].sold) || 0) - qty);
+                cachedInventory[model].sold_profit = Math.max(0, (parseFloat(cachedInventory[model].sold_profit) || 0) - price);
+                await setDoc(inventoryDocRef, cachedInventory);
+
+                const now = new Date();
+                const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
+                await addDoc(collection(db, "transactions"), {
+                    timestamp: now, timeLabel: timeString, type: "🔄 Ακύρωση/Επιστροφή", model: model, qty: qty, price: price, reference: clientName, user: "automation-engine"
+                });
+            }
+        }
+
         window.saveTrackingId = async (orderId, val) => {
             await setDoc(doc(db, "orders", orderId), { trackingId: val.trim() }, { merge: true });
             console.log(`Tracking ID for order ${orderId} saved: ${val}`);
         };
 
-        // --- 👥 MANAGEMENT: DIRECTORIES & PARTNERS PANEL ---
+        // --- 👥 MANAGEMENT: DIRECTORIES & PARTNERS PANEL (REALTIME INPUT ENGINE) ---
         window.renderDirectories = () => {
             const cContainer = document.getElementById("clients-list-container");
             const sContainer = document.getElementById("suppliers-list-container");
@@ -978,16 +1088,15 @@
 
             cContainer.innerHTML = ""; sContainer.innerHTML = "";
 
-            // Render Clients
             Object.keys(cachedClients).forEach(k => {
-                if(k.toLowerCase().includes(cFilter)) {
-                    const c = cachedClients[k];
+                const c = cachedClients[k];
+                if(k.toLowerCase().includes(cFilter) || (c.phone && c.phone.includes(cFilter))) {
                     const div = document.createElement("div");
-                    div.className = `p-3 rounded-xl border text-xs space-y-1.5 ${c.status === 'frozen' ? 'bg-blue-50/40 opacity-60' : 'bg-gray-50'}`;
+                    div.className = `p-3 rounded-xl border text-xs space-y-1.5 ${c.status === 'frozen' ? 'bg-blue-50/40 opacity-60' : 'bg-gray-50 dark:bg-gray-700/50'}`;
                     div.innerHTML = `
                         <div class="flex justify-between font-bold"><span>👥 ${c.name}</span> <span class="text-[10px] uppercase">${c.status}</span></div>
-                        <p class="text-gray-500 font-mono">📞 ${c.phone}</p>
-                        <div class="text-[10px] bg-white p-1 rounded max-h-20 overflow-y-auto border"><b>Καρτέλα Ιστορικού:</b><br>${c.history && c.history.length ? c.history.join("<br>") : "Καμία κίνηση"}</div>
+                        <p class="text-gray-500 dark:text-gray-400 font-mono">📞 ${c.phone || 'Δεν καταχωρήθηκε'}</p>
+                        <div class="text-[10px] bg-white dark:bg-gray-800 p-1 rounded max-h-20 overflow-y-auto border border-gray-100 dark:border-gray-700"><b>Καρτέλα Ιστορικού:</b><br>${c.history && c.history.length ? c.history.join("<br>") : "Καμία κίνηση"}</div>
                         ${userRole === 'admin' ? `
                             <div class="flex gap-1 pt-1 text-[9px]">
                                 <button onclick="window.updatePartnerStatus('client', '${k}', 'active')" class="bg-green-600 text-white p-0.5 rounded flex-1">Ενεργός</button>
@@ -999,16 +1108,15 @@
                 }
             });
 
-            // Render Suppliers
             Object.keys(cachedSuppliers).forEach(k => {
-                if(k.toLowerCase().includes(sFilter)) {
-                    const s = cachedSuppliers[k];
+                const s = cachedSuppliers[k];
+                if(k.toLowerCase().includes(sFilter) || (s.phone && s.phone.includes(sFilter))) {
                     const div = document.createElement("div");
-                    div.className = `p-3 rounded-xl border text-xs space-y-1.5 ${s.status === 'frozen' ? 'bg-blue-50/40 opacity-60' : 'bg-gray-50'}`;
+                    div.className = `p-3 rounded-xl border text-xs space-y-1.5 ${s.status === 'frozen' ? 'bg-blue-50/40 opacity-60' : 'bg-gray-50 dark:bg-gray-700/50'}`;
                     div.innerHTML = `
                         <div class="flex justify-between font-bold"><span>🏭 ${s.name}</span> <span class="text-[10px] uppercase">${s.status}</span></div>
-                        <p class="text-gray-500 font-mono">📞 ${s.phone}</p>
-                        <div class="text-[10px] bg-white p-1 rounded max-h-20 overflow-y-auto border"><b>Καρτέλα Ιστορικού:</b><br>${s.history && s.history.length ? s.history.join("<br>") : "Καμία κίνηση"}</div>
+                        <p class="text-gray-500 dark:text-gray-400 font-mono">📞 ${s.phone ? s.phone : '<span class="italic text-gray-400">Προαιρετικό (Κενό)</span>'}</p>
+                        <div class="text-[10px] bg-white dark:bg-gray-800 p-1 rounded max-h-20 overflow-y-auto border border-gray-100 dark:border-gray-700"><b>Καρτέλα Ιστορικού:</b><br>${s.history && s.history.length ? s.history.join("<br>") : "Καμία κίνηση"}</div>
                         ${userRole === 'admin' ? `
                             <div class="flex gap-1 pt-1 text-[9px]">
                                 <button onclick="window.updatePartnerStatus('supplier', '${k}', 'active')" class="bg-green-600 text-white p-0.5 rounded flex-1">Ενεργός</button>
@@ -1049,71 +1157,63 @@
             document.getElementById("admin-prod-vinted").value = "";
         };
 
-        window.addEntityManual = async () => {
-            const type = document.getElementById("new-entity-type").value;
-            const name = document.getElementById("new-entity-name").value.trim();
-            const phone = document.getElementById("new-entity-phone").value.trim();
-
-            if(!name || !phone) { alert("❌ Συμπληρώστε όνομα και τηλέφωνο!"); return; }
-
-            if(type === 'client') {
-                cachedClients[name] = { name: name, phone: phone, status: 'active', history: [] };
-            } else {
-                cachedSuppliers[name] = { name: name, phone: phone, status: 'active', history: [] };
-            }
-
-            await setDoc(dirDocRef, { clients: cachedClients, suppliers: cachedSuppliers });
-            alert("✅ Ο συνεργάτης προστέθηκε με επιτυχία.");
-            document.getElementById("new-entity-name").value = "";
-            document.getElementById("new-entity-phone").value = "";
-        };
-
-        // BATCH IMPORTER ENGINE
+        // USER-FRIENDLY BATCH IMPORTER ENGINE (CSV/TEXT BASED - NO CODE)
         window.executeBatchImport = async () => {
             const type = document.getElementById("batch-import-type").value;
-            const rawJson = document.getElementById("batch-json-area").value.trim();
+            const rawText = document.getElementById("batch-json-area").value.trim();
             
-            if(!rawJson) { alert("❌ Το πεδίο JSON είναι άδειο!"); return; }
+            if(!rawText) { alert("❌ Το πεδίο κειμένου εισαγωγής είναι άδειο!"); return; }
+
+            const lines = rawText.split('\n');
+            let successCounter = 0;
 
             try {
-                const arr = JSON.parse(rawJson);
-                if(!Array.isArray(arr)) { alert("❌ Το JSON πρέπει να είναι μορφής Array []!"); return; }
-
                 if (type === 'products') {
-                    arr.forEach(item => {
-                        if(item.name) {
-                            cachedInventory[item.name] = {
-                                stock: parseInt(item.stock) || 0,
-                                sold: parseInt(item.sold) || 0,
-                                total_cost: parseFloat(item.total_cost) || 0,
-                                sold_profit: parseFloat(item.sold_profit) || 0,
-                                price: parseFloat(item.price) || 0,
-                                vinted_link: item.vinted_link || "",
-                                status: item.status || 'active'
+                    lines.forEach(line => {
+                        if(!line.trim()) return;
+                        const parts = line.split(';');
+                        const name = parts[0]?.trim();
+                        const price = parseFloat(parts[1]) || 0;
+                        const stock = parseInt(parts[2]) || 0;
+                        const vintedLink = parts[3]?.trim() || "";
+
+                        if(name) {
+                            cachedInventory[name] = {
+                                stock: stock,
+                                sold: cachedInventory[name]?.sold || 0,
+                                total_cost: cachedInventory[name]?.total_cost || 0,
+                                sold_profit: cachedInventory[name]?.sold_profit || 0,
+                                price: price,
+                                vinted_link: vintedLink,
+                                status: 'active'
                             };
+                            successCounter++;
                         }
                     });
                     await setDoc(inventoryDocRef, cachedInventory);
-                } else if (type === 'clients') {
-                    arr.forEach(item => {
-                        if(item.name) {
-                            cachedClients[item.name] = { name: item.name, phone: item.phone || "000", status: item.status || 'active', history: item.history || [] };
-                        }
-                    });
-                    await setDoc(dirDocRef, { clients: cachedClients, suppliers: cachedSuppliers });
-                } else if (type === 'suppliers') {
-                    arr.forEach(item => {
-                        if(item.name) {
-                            cachedSuppliers[item.name] = { name: item.name, phone: item.phone || "000", status: item.status || 'active', history: item.history || [] };
+                } else if (type === 'clients' || type === 'suppliers') {
+                    lines.forEach(line => {
+                        if(!line.trim()) return;
+                        const parts = line.split(';');
+                        const name = parts[0]?.trim();
+                        const phone = parts[1]?.trim() || "";
+
+                        if(name) {
+                            if (type === 'clients') {
+                                cachedClients[name] = { name: name, phone: phone, status: 'active', history: cachedClients[name]?.history || [] };
+                            } else {
+                                cachedSuppliers[name] = { name: name, phone: phone, status: 'active', history: cachedSuppliers[name]?.history || [] };
+                            }
+                            successCounter++;
                         }
                     });
                     await setDoc(dirDocRef, { clients: cachedClients, suppliers: cachedSuppliers });
                 }
 
-                alert("🚀 Η μαζική εισαγωγή ολοκληρώθηκε με απόλυτη επιτυχία!");
+                alert(`🚀 Η μαζική εισαγωγή ολοκληρώθηκε! Εισήχθησαν ${successCounter} εγγραφές με επιτυχία.`);
                 document.getElementById("batch-json-area").value = "";
             } catch(e) {
-                alert("❌ Αποτυχία Parsing JSON. Ελέγξτε τη σύνταξη (εισαγωγικά, κόμματα).");
+                alert("❌ Αποτυχία ανάλυσης δεδομένων. Βεβαιωθείτε ότι χρησιμοποιείτε σωστά το ερωτηματικό (;) ως διαχωριστικό.");
             }
         };
 
@@ -1124,33 +1224,29 @@
             res.innerHTML = "";
             if(!txt) return;
 
-            // 1. Έρευνα σε Προϊόντα Αποθήκης
             Object.keys(cachedInventory).forEach(k => {
                 if(k.toLowerCase().includes(txt)) {
                     res.innerHTML += `<div class="p-1 bg-gray-100 dark:bg-gray-700 rounded text-[11px]">📦 <b>Προϊόν:</b> ${k} | Στοκ: ${cachedInventory[k].stock}</div>`;
                 }
             });
 
-            // 2. Έρευνα σε Καταλόγους
             Object.keys(cachedClients).forEach(k => {
-                if(k.toLowerCase().includes(txt) || cachedClients[k].phone.includes(txt)) {
-                    res.innerHTML += `<div class="p-1 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200 rounded text-[11px]">👥 <b>Πελάτης:</b> ${k} (${cachedClients[k].phone})</div>`;
+                if(k.toLowerCase().includes(txt) || (cachedClients[k].phone && cachedClients[k].phone.includes(txt))) {
+                    res.innerHTML += `<div class="p-1 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200 rounded text-[11px]">👥 <b>Πελάτης:</b> ${k} (${cachedClients[k].phone || 'Χωρίς τηλ.'})</div>`;
                 }
             });
 
-            // 3. Έρευνα σε Παραγγελίες (Firestore Remote Scan)
             const qSnap = await getDocs(collection(db, "orders"));
             qSnap.forEach(doc => {
                 const o = doc.data();
                 if(o.orderId.toLowerCase().includes(txt) || o.clientName.toLowerCase().includes(txt) || o.clientPhone.includes(txt) || o.address.toLowerCase().includes(txt)) {
-                    res.innerHTML += `<div class="p-1 bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-200 rounded text-[11px]">📋 <b>Παραγγελία [${o.orderId}]:</b> ${o.clientName} - ${o.model} (${o.status})</div>`;
+                    res.innerHTML += `<div class="p-1 bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-200 rounded text-[11px]">📋 <b>Παραγγελία [${o.orderId}]:</b> ${o.clientName} - ${o.qty}x ${o.model} (${o.status})</div>`;
                 }
             });
         };
 
         // --- FILTER TRANSACTIONS (LIVE LOG) ---
         window.filterTransactions = () => {
-            // Οπτικό φιλτράρισμα του Realtime stream
             const typeFilter = document.getElementById("filter-tx-type").value;
             const textFilter = document.getElementById("search-tx-text").value.toLowerCase();
             const container = document.getElementById("transactions-container");
@@ -1167,7 +1263,6 @@
             }
         };
 
-        // HELPER LOGGERS
         async function addAdminLog(model, details) {
             const now = new Date();
             const timeString = now.toLocaleDateString('el-GR') + " " + now.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
